@@ -2,7 +2,9 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import houtbecke.rs.antbytes.AntBytes;
 import houtbecke.rs.antbytes.AntBytesImpl;
+import houtbecke.rs.antbytes.AntBytesUtil;
 import houtbecke.rs.antbytes.Page;
 import houtbecke.rs.antbytes.U16BIT;
 import houtbecke.rs.antbytes.U32BIT;
@@ -26,25 +28,24 @@ public class AntBytesTest  {
 
         @U32BIT(4)
         public long four;
-
+        
     }
 
-    AntBytesImpl impl = new AntBytesImpl();
+    AntBytes impl = AntBytesUtil.getInstance();
 
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] highBytes = {123, -1, -1, -1, -1, -1, -1, -1};
-
-
+    final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
 
     @Test
-    public void testToBytes() {
+    public void toBytesLow() {
 
-        TestAntMessage test = new TestAntMessage();
-        test.one = 1;
-        test.two = 2;
-        test.four = 4L;
+        TestAntMessage lowTest = new TestAntMessage();
+        lowTest.one = 1;
+        lowTest.two = 2;
+        lowTest.four = 4L;
 
-        byte[] antBytes = impl.toAntBytes(test);
+        byte[] antBytes = impl.toAntBytes(lowTest);
 
         assertEquals(lowBytes[0], antBytes[0]);
         assertEquals(lowBytes[1], antBytes[1]);
@@ -54,8 +55,27 @@ public class AntBytesTest  {
         assertEquals(lowBytes[5], antBytes[5]);
         assertEquals(lowBytes[6], antBytes[6]);
         assertEquals(lowBytes[7], antBytes[7]);
+    }
 
 
+    @Test
+    public void toBytesHigh() {
+
+        TestAntMessage highTest = new TestAntMessage();
+        highTest.one = 255;
+        highTest.two = 256 * 256 - 1;
+        highTest.four = -1;
+
+        byte[] antBytes = impl.toAntBytes(highTest);
+
+        assertEquals(highBytes[0], antBytes[0]);
+        assertEquals(highBytes[1], antBytes[1]);
+        assertEquals(highBytes[2], antBytes[2]);
+        assertEquals(highBytes[3], antBytes[3]);
+        assertEquals(highBytes[4], antBytes[4]);
+        assertEquals(highBytes[5], antBytes[5]);
+        assertEquals(highBytes[6], antBytes[6]);
+        assertEquals(highBytes[7], antBytes[7]);
     }
 
     @Test
@@ -75,4 +95,21 @@ public class AntBytesTest  {
 
 
     }
+
+    @Test
+    public void registration() {
+        impl.register(TestAntMessage.class);
+
+        impl.register(Object.class); // no side effects
+
+        Object message =  impl.fromAntBytes(lowBytes);
+        assertNotNull(message);
+        assertTrue(message instanceof TestAntMessage);
+
+        message = impl.fromAntBytes(noBytes);
+        assertNull(message);
+
+        assertNull(message);
+    }
+
 }

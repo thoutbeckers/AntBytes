@@ -2,6 +2,9 @@ package houtbecke.rs.antbytes;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AntBytesImpl implements AntBytes {
 
@@ -116,7 +119,34 @@ public class AntBytesImpl implements AntBytes {
         return object;
     }
 
-//    public Object fromAntBytes(byte[] antBytes) {
-//
-//    }
+    Map<Integer, Class> mapping = Collections.synchronizedMap(new HashMap<Integer, Class>());
+
+
+
+    protected int findPage(Class clazz) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Page.class)) {
+                Page page = f.getAnnotation(Page.class);
+                return page.value();
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void register(Class clazz) {
+        int page = findPage(clazz);
+        if (page == -1)
+            return;
+        mapping.put(page, clazz);
+    }
+
+    @Override
+    public Object fromAntBytes(byte[] antBytes) {
+        int page = antBytes[0] & 0xFF;
+        Class clazz = mapping.get(page);
+        if (clazz == null)
+            return null;
+        return instanceFromAntBytes(clazz, antBytes);
+    }
 }
