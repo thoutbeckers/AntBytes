@@ -2,14 +2,33 @@ repositories {
     mavenCentral()
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+
+        // make sure an up to date version of httpmime is used for the coveralls plugin
+        classpath 'org.apache.httpcomponents:httpmime:4.3'
+        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:0.6.1'
+    }
+}
+
 apply plugin: 'java'
 apply plugin: 'jacoco'
+apply plugin: 'coveralls'
 
 dependencies {
     testCompile 'junit:junit:4.10'
 }
 
 jacocoTestReport {
+
+    reports {
+        xml.enabled true
+    }
+
     group = "Reporting"
     description = "Generate Jacoco coverage reports after running tests."
     additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)

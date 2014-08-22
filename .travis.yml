@@ -1,0 +1,9 @@
+language: java
+
+env:
+    global:
+    - TERM=dumb
+
+after_success:
+    - ./gradlew jacocoTestReport
+    - ./gradlew coveralls
