@@ -8,7 +8,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention(RUNTIME)
 @Target({ ElementType.FIELD})
-public @interface U16BIT {
+public @interface UXBIT {
     int value() default 0;
     int startBit() default 0;
+    int bitLength() default 1;
 }

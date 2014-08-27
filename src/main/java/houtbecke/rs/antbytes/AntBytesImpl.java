@@ -30,14 +30,21 @@ public class AntBytesImpl implements AntBytes {
                 try {
                     Class type = anon.annotationType();
                     if (type == U8BIT.class) {
-                        BitBytes.output(output, ((U8BIT) anon).value() * 8, getLongFromField(f, o), 8);
+                        U8BIT u8bit = (U8BIT) anon;
+                        BitBytes.output(output, u8bit.value(), u8bit.startBit(), getLongFromField(f, o), 8);
                     } else if (type == U16BIT.class) {
-                        BitBytes.output(output, ((U16BIT)anon).value() * 8, getLongFromField(f, o), 16);
+                        U16BIT u16bit = (U16BIT) anon;
+                        BitBytes.output(output, u16bit.value(), u16bit.startBit(), getLongFromField(f, o), 16);
                     } else if (type == U32BIT.class) {
-                        BitBytes.output(output, ((U32BIT)anon).value() * 8, getLongFromField(f, o), 32);
+                        U32BIT u32bit = (U32BIT)anon;
+                        BitBytes.output(output, u32bit.value(), u32bit.startBit(), getLongFromField(f, o), 32);
+                    } else if (type == UXBIT.class) {
+                        UXBIT uxbit = ((UXBIT)anon);
+                        BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
                     } else if (type == Page.class) {
                         BitBytes.output(output, 0, ((Page)anon).value(), 8);
                     }
+
                 } catch (IllegalAccessException ignore) {}
         return output;
     }
@@ -88,11 +95,17 @@ public class AntBytesImpl implements AntBytes {
             for (Annotation anon: f.getAnnotations()) {
                 Class type = anon.annotationType();
                 if (type == U8BIT.class) {
-                    setIntOnField(f, object, BitBytes.input(antBytes, ((U8BIT) anon).value() * 8, 8));
+                    U8BIT u8bit = (U8BIT) anon;
+                    setIntOnField(f, object, BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8));
                 } else if (type == U16BIT.class) {
-                    setIntOnField(f, object, BitBytes.input(antBytes, ((U16BIT) anon).value() * 8, 16));
+                    U16BIT u16bit = (U16BIT) anon;
+                    setIntOnField(f, object, BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16));
                 } else if (type == U32BIT.class) {
-                    setLongOnField(f, object, BitBytes.input(antBytes, ((U32BIT) anon).value() * 8, 32));
+                    U32BIT u32bit = (U32BIT)anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32));
+                } else if (type == UXBIT.class) {
+                    UXBIT uxbit = (UXBIT) anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
                 } else if (type == Page.class) {
                     setIntOnField(f, object, BitBytes.input(antBytes, 0, 8));
                 }

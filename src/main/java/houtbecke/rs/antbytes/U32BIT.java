@@ -9,5 +9,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({ ElementType.FIELD})
 public @interface U32BIT {
-    int value();
+    int value() default 0;
+    int startBit() default 0;
 }

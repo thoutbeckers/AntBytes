@@ -9,6 +9,7 @@ import houtbecke.rs.antbytes.Page;
 import houtbecke.rs.antbytes.U16BIT;
 import houtbecke.rs.antbytes.U32BIT;
 import houtbecke.rs.antbytes.U8BIT;
+import houtbecke.rs.antbytes.UXBIT;
 
 import static org.junit.Assert.*;
 
@@ -30,6 +31,26 @@ public class AntBytesTest  {
         public long four;
         
     }
+
+    public static class TestAntBitMessage {
+        public TestAntBitMessage() {}
+
+        @Page(123)
+        private int page;
+
+        @U8BIT(value = 1, startBit = 3)
+        int one;
+
+        @UXBIT(value = 2, startBit = 3)
+        long bit;
+
+        @U16BIT(value = 2, startBit = 4)
+        protected int two;
+
+        @UXBIT(value = 4, startBit = 4, bitLength = 2)
+        int bits;
+    }
+
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -96,6 +117,39 @@ public class AntBytesTest  {
 
     }
 
+    // 129 = 10000001
+    final static byte[] bitBytes = {123, 0b000_10000, 0b001_1_1111, (byte)0b1111_1111, (byte)0b1111_10_00, 0, 0, 0};
+
+    @Test
+    public void fromBitBytes() {
+        TestAntBitMessage message = impl.instanceFromAntBytes(TestAntBitMessage.class, bitBytes);
+        assertEquals(123, message.page);
+        assertEquals(129, message.one);
+        assertEquals(1, message.bit);
+        assertEquals(0b10, message.bits);
+        assertEquals(65535, message.two);
+
+    }
+
+    @Test public void toBitBytes() {
+        TestAntBitMessage bitMessage = new TestAntBitMessage();
+        bitMessage.one = 129;
+        bitMessage.bit = 1;
+        bitMessage.two = 65535;
+        bitMessage.bits = 0b10;
+        byte[] antBytes = impl.toAntBytes(bitMessage);
+
+        assertEquals(bitBytes[0], antBytes[0]);
+        assertEquals(bitBytes[1], antBytes[1]);
+        assertEquals(bitBytes[2], antBytes[2]);
+        assertEquals(bitBytes[3], antBytes[3]);
+        assertEquals(bitBytes[4], antBytes[4]);
+        assertEquals(bitBytes[5], antBytes[5]);
+        assertEquals(bitBytes[6], antBytes[6]);
+        assertEquals(bitBytes[7], antBytes[7]);
+
+    }
+
     @Test
     public void registration() {
         impl.register(TestAntMessage.class);
@@ -109,7 +163,6 @@ public class AntBytesTest  {
         message = impl.fromAntBytes(noBytes);
         assertNull(message);
 
-        assertNull(message);
     }
 
 }
