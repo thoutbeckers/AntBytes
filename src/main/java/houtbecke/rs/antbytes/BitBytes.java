@@ -47,7 +47,7 @@ public class BitBytes {
             int bitlenInByte = Math.min(8 - bitposInByte, bitlength - writtenBits);
 
             // create a mask for the number of bits we are writing, and shift it left to the position where we will write the,
-            long mask = maskWithLength(bitlenInByte) << 8 - bitposInByte - bitlenInByte;
+            long mask = maskWithLength(bitlenInByte) << (8 - bitposInByte - bitlenInByte);
 
             // work with only the bits not yet written
             long maskWritten = ~(maskWithLength(writtenBits) << (bitlength - writtenBits));
@@ -57,7 +57,7 @@ public class BitBytes {
             long val = bitsNotWritten >> (bitlength - writtenBits - bitlenInByte);
 
             // shift the bits we want to write to the correct position
-            val <<= 8 - bitposInByte - bitlenInByte;
+            val <<= (8 - bitposInByte - bitlenInByte);
 
             // clear bits we will write to
             output[bytePos] &= (~mask);
