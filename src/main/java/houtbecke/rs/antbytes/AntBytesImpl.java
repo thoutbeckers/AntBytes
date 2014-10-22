@@ -167,10 +167,6 @@ public class AntBytesImpl implements AntBytes {
                     UXBIT uxbit = (UXBIT) anon;
                     if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
                         return false;
-
-                } else if (type == Page.class) {
-                    if ( required.value() != BitBytes.input(antBytes, 0, 8))
-                        return false;
                 }
             }
 

@@ -89,7 +89,25 @@ public class AntBytesTest  {
 
     }
 
+    public static class TestRequiredThree {
+        public TestRequiredThree() {}
+        @Page(4)
+        private int page;
 
+        @Required(3)
+        @UXBIT(value = 1, startBit = 0, bitLength = 4)
+        int bits;
+
+
+        @Required(2)
+        @U16BIT(2)
+        protected int two;
+
+        @Required(4)
+        @U32BIT(4)
+        public long four;
+
+    }
 
 
 
@@ -102,6 +120,7 @@ public class AntBytesTest  {
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
     final static byte[] requiredOneBytes = {4, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] requiredTwoBytes = {4, 2, 0, 2, 0, 0, 0, 4};
+    final static byte[] requiredThreeBytes = {4, 48, 0, 2, 0, 0, 0, 4};
 
 
     @Test
@@ -216,6 +235,7 @@ public class AntBytesTest  {
     public void registrationRequired() {
         impl.register(TestRequiredOne.class);
         impl.register(TestRequiredTwo.class);
+        impl.register(TestRequiredThree.class);
 
 
         Object message =  impl.fromAntBytes(requiredOneBytes);
@@ -225,6 +245,10 @@ public class AntBytesTest  {
         Object message2 =  impl.fromAntBytes(requiredTwoBytes);
         assertNotNull(message2);
         assertTrue(message2 instanceof TestRequiredTwo);
+
+        Object message3 =  impl.fromAntBytes(requiredThreeBytes);
+        assertNotNull(message3);
+        assertTrue(message3 instanceof TestRequiredThree);
 
     }
 
