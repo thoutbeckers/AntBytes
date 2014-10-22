@@ -121,6 +121,9 @@ public class AntBytesTest  {
     final static byte[] requiredOneBytes = {4, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] requiredTwoBytes = {4, 2, 0, 2, 0, 0, 0, 4};
     final static byte[] requiredThreeBytes = {4, 48, 0, 2, 0, 0, 0, 4};
+    final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
+    final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
+    final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
 
 
     @Test
@@ -250,6 +253,14 @@ public class AntBytesTest  {
         assertNotNull(message3);
         assertTrue(message3 instanceof TestRequiredThree);
 
+        Object message4 =  impl.fromAntBytes(requiredFourBytes);
+        assertNull(message4);
+
+        Object message5 =  impl.fromAntBytes(requiredFiveBytes);
+        assertNull(message5);
+
+        Object message6 =  impl.fromAntBytes(requiredSixBytes);
+        assertNull(message6);
     }
 
 }
