@@ -140,27 +140,47 @@ public class AntBytesImpl implements AntBytes {
         return false;
     }
 
-
-    protected boolean hasAllRequired(Class clazz,Object object) {
-
+    public  boolean hasAllRequired(Class clazz, byte[] antBytes) {
         for (Field f: clazz.getDeclaredFields()) {
-            if (f.isAnnotationPresent(Required.class)) {
-                Required required =   f.getAnnotation(Required.class);
-                int value = 0;
-                try {
-                    f.setAccessible(true);
-                    value = f.getInt(object);
-                    f.setAccessible(false);
+            if (!f.isAnnotationPresent(Required.class))  continue;
 
-                } catch (IllegalAccessException e) {
-                    return false;
+            Required required = f.getAnnotation(Required.class);
+
+            for (Annotation anon : f.getAnnotations()) {
+                Class type = anon.annotationType();
+                if (type == U8BIT.class) {
+                    U8BIT u8bit = (U8BIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8))
+                        return false;
+
+                } else if (type == U16BIT.class) {
+                    U16BIT u16bit = (U16BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16))
+                        return false;
+
+                } else if (type == U32BIT.class) {
+                    U32BIT u32bit = (U32BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32))
+                        return false;
+
+                } else if (type == UXBIT.class) {
+                    UXBIT uxbit = (UXBIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
+                        return false;
+
+                } else if (type == Page.class) {
+                    if ( required.value() != BitBytes.input(antBytes, 0, 8))
+                        return false;
                 }
-                if  (required.value() != value) return false;
-
             }
+
+
+
         }
         return true;
     }
+
+
 
     @Override
     public void register(Class clazz) {
@@ -192,9 +212,8 @@ public class AntBytesImpl implements AntBytes {
         if (o instanceof ArrayList){
             ArrayList<Class> subpages =   (ArrayList<Class>) o;
             for(Class c : subpages){
-               Object object = instanceFromAntBytes(c, antBytes);
-                if (hasAllRequired(c,object))
-                    return object;
+                if (hasAllRequired(c,antBytes))
+                    return instanceFromAntBytes(c, antBytes);
             }
 
         }else{
