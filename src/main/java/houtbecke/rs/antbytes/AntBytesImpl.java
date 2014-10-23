@@ -3,6 +3,7 @@ package houtbecke.rs.antbytes;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -114,7 +115,7 @@ public class AntBytesImpl implements AntBytes {
         return object;
     }
 
-    Map<Integer, Class> mapping = Collections.synchronizedMap(new HashMap<Integer, Class>());
+    Map<Integer, Object> mapping = Collections.synchronizedMap(new HashMap<Integer, Object>());
 
 
 
@@ -128,18 +129,93 @@ public class AntBytesImpl implements AntBytes {
         return -1;
     }
 
+
+    protected boolean hasRequired(Class clazz) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Required.class)) {
+               return true;
+
+            }
+        }
+        return false;
+    }
+
+    public  boolean hasAllRequired(Class clazz, byte[] antBytes) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (!f.isAnnotationPresent(Required.class))  continue;
+
+            Required required = f.getAnnotation(Required.class);
+
+            for (Annotation anon : f.getAnnotations()) {
+                Class type = anon.annotationType();
+                if (type == U8BIT.class) {
+                    U8BIT u8bit = (U8BIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8))
+                        return false;
+
+                } else if (type == U16BIT.class) {
+                    U16BIT u16bit = (U16BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16))
+                        return false;
+
+                } else if (type == U32BIT.class) {
+                    U32BIT u32bit = (U32BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32))
+                        return false;
+
+                } else if (type == UXBIT.class) {
+                    UXBIT uxbit = (UXBIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
+                        return false;
+                }
+            }
+
+
+
+        }
+        return true;
+    }
+
+
+
     @Override
     public void register(Class clazz) {
         int page = findPage(clazz);
         if (page == -1)
             return;
-        mapping.put(page, clazz);
+        if(!hasRequired(clazz)){
+            mapping.put(page, clazz);
+        }else{
+            ArrayList<Class> subpages;
+          if (mapping.containsKey(page) && (mapping.get(page) instanceof ArrayList))
+            {
+                subpages =  (ArrayList<Class>)mapping.get(page);
+            }else{
+                subpages = new ArrayList<Class>();
+            }
+            subpages.add(clazz);
+            mapping.put(page, subpages);
+
+        }
+
     }
 
     @Override
     public Object fromAntBytes(byte[] antBytes) {
         int page = antBytes[0] & 0xFF;
-        Class clazz = mapping.get(page);
+       Object o = mapping.get(page);
+        Class clazz = null;
+        if (o instanceof ArrayList){
+            ArrayList<Class> subpages =   (ArrayList<Class>) o;
+            for(Class c : subpages){
+                if (hasAllRequired(c,antBytes))
+                    return instanceFromAntBytes(c, antBytes);
+            }
+
+        }else{
+            clazz = (Class) mapping.get(page);
+        }
+
         if (clazz == null)
             return null;
         return instanceFromAntBytes(clazz, antBytes);
