@@ -113,4 +113,22 @@ public class BitBytes {
         return ret;
     }
 
+
+    public static long inputLSB (byte[] input, int bitpos, int bitlength, boolean signed) {
+        if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
+
+        long result = 0;
+        for (int i =   (bitpos / 8 + bitlength / 8) -1 ; i >= bitpos / 8  ;  i--) {
+            result <<= 8;
+
+            if (signed) {
+                result += input[i];
+                signed= false;
+            }else{
+                result += input[i] & 0xFF;
+
+            }
+        }
+        return result;
+    }
 }
