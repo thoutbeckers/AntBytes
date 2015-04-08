@@ -103,4 +103,17 @@ public class BitBytesTest {
 
         // TODO entire long, negative values
     }
+
+
+    @org.junit.Test
+    public void testInputLSB() {
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{1, 0, 0,0, 0,0,0,0},0,8,false));
+        Assert.assertEquals(-1,BitBytes.inputLSB( new byte[]{-1, 0, 0,0, 0,0,0,0},0,8,true));
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{0, 1, 0,0, 0,0,0,0},8,8,false));
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{0, 1, 0,0, 0,0,0,0},8,16,false));
+        Assert.assertEquals(0xFFFF,BitBytes.inputLSB( new byte[]{(byte)0xFF, (byte) 0xFF, 0,0, 0,0,0,0},0,16,false));
+        Assert.assertEquals(-1,BitBytes.inputLSB( new byte[]{(byte)0xFF, (byte) 0xFF, 0,0, 0,0,0,0},0,16,true));
+
+
+    }
 }
