@@ -116,4 +116,20 @@ public class BitBytesTest {
 
 
     }
+
+
+    @org.junit.Test
+    public void testOutputLSB() {
+        byte[] output = new byte[2];
+        BitBytes.outputLSB(output,0,1,16);
+        Assert.assertEquals("00000001_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+        BitBytes.outputLSB(output,0,0xFFFF,16);
+        Assert.assertEquals("11111111_11111111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+        BitBytes.outputLSB(output,0,256,16);
+        Assert.assertEquals("00000000_00000001".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        BitBytes.outputLSB(output,0,-1,16);
+        Assert.assertEquals("11111111_11111111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+    }
+
 }
