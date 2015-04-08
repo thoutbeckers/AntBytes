@@ -131,4 +131,15 @@ public class BitBytes {
         }
         return result;
     }
+
+
+    public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
+                if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
+                int pos = bitpos / 8;
+
+                for (int i = 0 ; i < bitlength / 8 ; i++) {
+                        output[bitpos / 8 + i] = (byte) (value & 0xffL);
+                        value >>= 8;
+                 }
+     }
 }
