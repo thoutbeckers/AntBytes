@@ -103,4 +103,33 @@ public class BitBytesTest {
 
         // TODO entire long, negative values
     }
+
+
+    @org.junit.Test
+    public void testInputLSB() {
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{1, 0, 0,0, 0,0,0,0},0,8,false));
+        Assert.assertEquals(-1,BitBytes.inputLSB( new byte[]{-1, 0, 0,0, 0,0,0,0},0,8,true));
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{0, 1, 0,0, 0,0,0,0},8,8,false));
+        Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{0, 1, 0,0, 0,0,0,0},8,16,false));
+        Assert.assertEquals(0xFFFF,BitBytes.inputLSB( new byte[]{(byte)0xFF, (byte) 0xFF, 0,0, 0,0,0,0},0,16,false));
+        Assert.assertEquals(-1,BitBytes.inputLSB( new byte[]{(byte)0xFF, (byte) 0xFF, 0,0, 0,0,0,0},0,16,true));
+
+
+    }
+
+
+    @org.junit.Test
+    public void testOutputLSB() {
+        byte[] output = new byte[2];
+        BitBytes.outputLSB(output,0,1,16);
+        Assert.assertEquals("00000001_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+        BitBytes.outputLSB(output,0,0xFFFF,16);
+        Assert.assertEquals("11111111_11111111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+        BitBytes.outputLSB(output,0,256,16);
+        Assert.assertEquals("00000000_00000001".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        BitBytes.outputLSB(output,0,-1,16);
+        Assert.assertEquals("11111111_11111111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+    }
+
 }
