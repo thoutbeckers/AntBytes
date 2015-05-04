@@ -25,7 +25,7 @@ public class AntBytesImpl implements AntBytes {
 
     @Override
     public <T>byte[] toAntBytes(T o) {
-        return toAntBytes(0,8);
+        return toAntBytes(o,8);
     }
 
     @Override
