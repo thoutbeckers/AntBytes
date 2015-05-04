@@ -25,7 +25,12 @@ public class AntBytesImpl implements AntBytes {
 
     @Override
     public <T>byte[] toAntBytes(T o) {
-        byte[] output = new byte[8];
+        return toAntBytes(0,8);
+    }
+
+    @Override
+    public <T> byte[] toAntBytes(T o, int size) {
+        byte[] output = new byte[size];
         for (Field f: o.getClass().getDeclaredFields())
             for (Annotation anon: f.getAnnotations())
                 try {
@@ -49,6 +54,7 @@ public class AntBytesImpl implements AntBytes {
                 } catch (IllegalAccessException ignore) {}
         return output;
     }
+
 
 
 

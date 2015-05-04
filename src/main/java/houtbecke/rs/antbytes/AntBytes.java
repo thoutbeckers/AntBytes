@@ -2,6 +2,8 @@ package houtbecke.rs.antbytes;
 
 public interface AntBytes {
     <T>byte[] toAntBytes(T o);
+    <T>byte[] toAntBytes(T o,int size);
+
     <T>T instanceFromAntBytes(Class<? extends T> clazz, byte[] antBytes);
     <T>T fromAntBytes(T object, byte[] antBytes);
 
