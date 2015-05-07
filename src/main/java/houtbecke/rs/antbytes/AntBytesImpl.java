@@ -44,6 +44,12 @@ public class AntBytesImpl implements AntBytes {
                     } else if (type == U32BIT.class) {
                         U32BIT u32bit = (U32BIT)anon;
                         BitBytes.output(output, u32bit.value(), u32bit.startBit(), getLongFromField(f, o), 32);
+                    } else if (type == U16BIT.class) {
+                        LSBU16BIT lsbu16bit = (LSBU16BIT) anon;
+                        BitBytes.outputLSB(output, lsbu16bit.value(), lsbu16bit.startBit(), getLongFromField(f, o), 16);
+                    } else if (type == U32BIT.class) {
+                        LSBU32BIT lsbu32bit = (LSBU32BIT)anon;
+                        BitBytes.outputLSB(output, lsbu32bit.value(), lsbu32bit.startBit(), getLongFromField(f, o), 32);
                     } else if (type == UXBIT.class) {
                         UXBIT uxbit = ((UXBIT)anon);
                         BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
@@ -110,6 +116,12 @@ public class AntBytesImpl implements AntBytes {
                 } else if (type == U32BIT.class) {
                     U32BIT u32bit = (U32BIT)anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32));
+                } else if (type == U16BIT.class) {
+                    LSBU16BIT lsbu16bit = (LSBU16BIT) anon;
+                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbu16bit.value(), lsbu16bit.startBit(), 16));
+                } else if (type == U32BIT.class) {
+                    LSBU32BIT u32bit = (LSBU32BIT)anon;
+                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value(), u32bit.startBit(), 32));
                 } else if (type == UXBIT.class) {
                     UXBIT uxbit = (UXBIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
