@@ -201,6 +201,13 @@ public class AntBytesTest  {
         assertEquals(-1L, message.four);
 
 
+        TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
+        assertNotNull(message2);
+        assertEquals(1, message2.one);
+        assertEquals(2, message2.two);
+        assertEquals(4, message2.four);
+        assertEquals(124, message2.page);
+
     }
 
     // 129 = 10000001
