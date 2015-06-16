@@ -76,30 +76,62 @@ public class BitBytes {
     }
 
 
+    public static long input(byte[] input, int bytepos, int relativeBitpos, final int bitlength,boolean signed) {
+        return input(input, bytepos * 8 + relativeBitpos, bitlength,signed);
+    }
+
     public static long input(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
         return input(input, bytepos * 8 + relativeBitpos, bitlength);
     }
 
+
     public static long input(byte[] input, int bitpos, int bitlength) {
+        return input(input,bitpos,bitlength,false);
+    }
+
+    public static long input(byte[] input, int bitpos, int bitlength,boolean signed) {
+
+
 
         int bytePos = bitpos / 8;
         int bitposInByte = bitpos % 8;
         int readBits = 0;
         long ret = 0;
+        boolean negative=false;
+        if (signed){
+            if   (((input[bytePos]  >> bitpos) & 1)  == 1)
+            {
+                negative =true;
+            }
+
+            bitpos = bitpos +1;
+            bytePos = bitpos / 8;
+            bitposInByte = bitpos % 8;
+            bitlength= bitlength-1;
+        }
+
 
         while (readBits < bitlength) {
             // see how many bit from this byte we will read
             int bitlenInByte = Math.min(8 - bitposInByte, bitlength - readBits);
+
+
 
             // create a mask for getting the bits out the byte
             long mask = maskWithLength(bitlenInByte) << 8 - bitposInByte - bitlenInByte;
 
             // read the bits and shift them back again to be right aligned
             long valFromByte = (input[bytePos] & mask) >> 8 - bitposInByte - bitlenInByte;
+            if (negative){
+                valFromByte = (~input[bytePos] & mask) >> 8 - bitposInByte - bitlenInByte;
+                valFromByte =valFromByte;
+            }
+
 
             // shift the bits into the correct place for storing.
             ret |=  valFromByte << (bitlength - readBits - bitlenInByte);
             // obviously the above two steps can be combined, for clarity I'll leave it as is for now
+
 
 
             readBits+=bitlenInByte;
@@ -109,7 +141,9 @@ public class BitBytes {
                 bytePos++;
             }
         }
-
+        if (negative){
+            ret =  -ret -1;
+        }
         return ret;
     }
 

@@ -61,7 +61,30 @@ public class BitBytesTest {
         BitBytes.output(output, 3, Long.MAX_VALUE, 64);
         Assert.assertEquals("0000_11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111110_0000".replaceAll("_", ""), BitBytes.toPaddedString(output));
 
-        // TODO negative values
+
+        // start values with one
+        output = new byte[1] ;
+        ///////////////////////// clamped | the ten bits |
+        BitBytes.output(output,0, -1, 8);
+        Assert.assertEquals("1111_1111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        // start values with one
+        output = new byte[1] ;
+        ///////////////////////// clamped | the ten bits |
+        BitBytes.output(output,0, -2, 8);
+        Assert.assertEquals("1111_1110".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        // start values with one
+        output = new byte[2] ;
+        ///////////////////////// clamped | the ten bits |
+        BitBytes.output(output,0, -1, 16);
+        Assert.assertEquals("1111_1111_1111_1111".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        // start values with one
+        output = new byte[2] ;
+        ///////////////////////// clamped | the ten bits |
+        BitBytes.output(output,0, -2, 16);
+        Assert.assertEquals("1111_1111_1111_1110".replaceAll("_", ""), BitBytes.toPaddedString(output));
 
     }
 
@@ -69,10 +92,28 @@ public class BitBytesTest {
     @Test
     public void testInput() {
 
-        // middle of byte, overlapping into next byte, leading 1
-        byte[] input = { (byte) 0b0000_0000, (byte) 0b0000_1101, (byte) 0b1011_1100};
+        byte[] input = new byte[] { (byte) 0b1111_1111};
+        long value = BitBytes.input(input,0 , 8,true);
+        Assert.assertEquals(-1,value);
 
-        long value = BitBytes.input(input, 1, 4, 10);
+
+        input = new byte[] { (byte) 0b1111_1111,(byte) 0b1111_1111};
+        value = BitBytes.input(input,0 , 16,true);
+        Assert.assertEquals(-1,value);
+
+        input = new byte[] { (byte) 0b1111_1111,(byte) 0b1111_1111,(byte) 0b1111_1111,(byte) 0b1111_1111};
+        value = BitBytes.input(input,0 , 32,true);
+        Assert.assertEquals(-1,value);
+
+        input = new byte[] { (byte) 0b1111_1111,(byte) 0b1111_1110};
+        value = BitBytes.input(input,0 , 16,true);
+        Assert.assertEquals(-2,value);
+
+
+        // middle of byte, overlapping into next byte, leading 1
+        input = new byte[] { (byte) 0b0000_0000, (byte) 0b0000_1101, (byte) 0b1011_1100};
+
+         value = BitBytes.input(input, 1, 4, 10);
 
         Assert.assertEquals("1101101111", Long.toBinaryString(value));
 
@@ -101,7 +142,10 @@ public class BitBytesTest {
         value = BitBytes.input(input, 8, 1);
         Assert.assertEquals("0", Long.toBinaryString(value));
 
-        // TODO entire long, negative values
+        // TODO entire long
+
+
+
     }
 
 
