@@ -5,6 +5,8 @@ import java.util.Arrays;
 import houtbecke.rs.antbytes.AntBytes;
 import houtbecke.rs.antbytes.AntBytesImpl;
 import houtbecke.rs.antbytes.AntBytesUtil;
+import houtbecke.rs.antbytes.LSBU16BIT;
+import houtbecke.rs.antbytes.LSBU32BIT;
 import houtbecke.rs.antbytes.Page;
 import houtbecke.rs.antbytes.Required;
 import houtbecke.rs.antbytes.S16BIT;
@@ -130,7 +132,22 @@ public class AntBytesTest  {
     }
 
 
+    public static class TestLSBMessage {
+        public TestLSBMessage() {}
 
+        @Page(124)
+        private int page;
+
+        @U8BIT(1)
+        int one;
+
+        @LSBU16BIT(2)
+        protected int two;
+
+        @LSBU32BIT(4)
+        public long four;
+
+    }
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -145,6 +162,7 @@ public class AntBytesTest  {
     final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
     final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
     final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
+    final static byte[] lowLSBBytes = {124, 1, 2, 0, 4, 0, 0, 0};
 
 
     @Test
@@ -272,6 +290,13 @@ public class AntBytesTest  {
         assertEquals(-4, message.four);
 
 
+        TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
+        assertNotNull(message2);
+        assertEquals(1, message2.one);
+        assertEquals(2, message2.two);
+        assertEquals(4, message2.four);
+        assertEquals(124, message2.page);
+
     }
 
     // 129 = 10000001
@@ -350,6 +375,25 @@ public class AntBytesTest  {
 
         Object message6 =  impl.fromAntBytes(requiredSixBytes);
         assertNull(message6);
+    }
+    @Test
+    public void toLSBytesLow() {
+
+        TestLSBMessage lowTest = new TestLSBMessage();
+        lowTest.one = 1;
+        lowTest.two = 2;
+        lowTest.four = 4L;
+
+        byte[] antBytes = impl.toAntBytes(lowTest);
+
+        assertEquals(lowLSBBytes[0], antBytes[0]);
+        assertEquals(lowLSBBytes[1], antBytes[1]);
+        assertEquals(lowLSBBytes[2], antBytes[2]);
+        assertEquals(lowLSBBytes[3], antBytes[3]);
+        assertEquals(lowLSBBytes[4], antBytes[4]);
+        assertEquals(lowLSBBytes[5], antBytes[5]);
+        assertEquals(lowLSBBytes[6], antBytes[6]);
+        assertEquals(lowLSBBytes[7], antBytes[7]);
     }
 
 }
