@@ -113,6 +113,9 @@ public class BitBytes {
         return ret;
     }
 
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
+        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength,false);
+    }
 
     public static long inputLSB (byte[] input, int bitpos, int bitlength, boolean signed) {
         if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
@@ -132,6 +135,10 @@ public class BitBytes {
         return result;
     }
 
+
+    public static void outputLSB(byte[] output, int bytepos, int relativeBitpos, long value, int bitlength) {
+        outputLSB(output, bytepos * 8 + relativeBitpos, value, bitlength);
+    }
 
     public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
                 if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
