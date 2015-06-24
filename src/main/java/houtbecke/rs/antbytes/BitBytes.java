@@ -147,26 +147,49 @@ public class BitBytes {
         return ret;
     }
 
-    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
-        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength,false);
+
+
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength,boolean signed) {
+        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength, signed);
     }
 
-    public static long inputLSB (byte[] input, int bitpos, int bitlength, boolean signed) {
-        if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
+        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength);
+    }
 
-        long result = 0;
-        for (int i =   (bitpos / 8 + bitlength / 8) -1 ; i >= bitpos / 8  ;  i--) {
-            result <<= 8;
 
-            if (signed) {
-                result += input[i];
-                signed= false;
-            }else{
-                result += input[i] & 0xFF;
+    public static long inputLSB(byte[] input, int bitpos, int bitlength) {
+        return inputLSB(input, bitpos, bitlength, false);
+    }
 
+    public static long inputLSB(byte[] input, int bitpos, int bitlength,boolean signed) {
+        if (bitpos % 8 != 0 ) throw new RuntimeException("not supported yet");
+        if (bitlength % 8 != 0  && signed) throw new RuntimeException("not supported yet");
+
+
+        int byteOffSet = (bitpos/8);
+        int byteLength = (bitlength/8);
+        int lastBitLength = bitlength % 8;
+        if (lastBitLength==0)lastBitLength=8;
+        int bitShift = 8 -lastBitLength;
+
+        if (bitlength % 8 !=0) byteLength++;
+        byte[]  msbInput = new byte[byteLength];
+
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
+
+            if (msbPos==0){
+
+                byte lastByte  = (byte)   clamp( (input[i] >> bitShift),lastBitLength);
+                msbInput[msbPos] = lastByte;
+
+            } else{
+                msbInput[msbPos] = input[i];
             }
         }
-        return result;
+
+        return input(msbInput,0,bitShift,bitlength,signed);
     }
 
 
@@ -175,12 +198,30 @@ public class BitBytes {
     }
 
     public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
-                if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
-                int pos = bitpos / 8;
+                if (bitpos % 8 != 0 ) throw new RuntimeException("not supported yet");
+                int lastBitLength = bitlength % 8;
+                if (lastBitLength==0)lastBitLength=8;
+                int bitShift = 8 -lastBitLength;
+                int mask =   (8-lastBitLength);
+                int byteLength = (bitlength/8);
+                if (bitlength % 8 !=0) byteLength++;
 
-                for (int i = 0 ; i < bitlength / 8 ; i++) {
-                        output[bitpos / 8 + i] = (byte) (value & 0xffL);
+
+
+        for (int i = 0 ; i < byteLength ; i++) {
+                    int pos = bitpos / 8+i;
+
+                    if (i ==  (byteLength-1)){
+                       long lastValue = clamp(value,lastBitLength);
+                        output[pos] = (byte)clamp(output[pos],mask);
+
+                        output[pos] |=  (lastValue <<bitShift);
+                    }else{
+                        output[pos] = (byte) (value & 0xffL);
                         value >>= 8;
+                    }
+
+
                  }
      }
 }

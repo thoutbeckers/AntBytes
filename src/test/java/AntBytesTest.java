@@ -138,8 +138,10 @@ public class AntBytesTest  {
         @Page(124)
         private int page;
 
-        @U8BIT(1)
+
+        @UXBIT(value = 1, startBit = 0, bitLength = 4)
         int one;
+
 
         @LSBU16BIT(2)
         protected int two;
@@ -148,6 +150,9 @@ public class AntBytesTest  {
         public long four;
 
     }
+
+
+
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -162,7 +167,7 @@ public class AntBytesTest  {
     final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
     final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
     final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
-    final static byte[] lowLSBBytes = {124, 1, 2, 0, 4, 0, 0, 0};
+    final static byte[] lowLSBBytes = {124, 16, 2, 0, 4, 0, 0, 0};
 
 
     @Test
