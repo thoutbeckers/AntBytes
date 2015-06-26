@@ -120,7 +120,7 @@ public class AntBytesTest  {
         public TestSignedAntMessage() {}
 
         @Page(123)
-        private int page;
+        private int page=123;
 
         @S8BIT(1)
         int one;
@@ -136,7 +136,7 @@ public class AntBytesTest  {
         public TestSignedAntMessage2() {}
 
         @Page(123)
-        private int page;
+        private int page=123;
 
         @SXBIT(value = 1, startBit = 0, bitLength = 4)
         int one;
@@ -237,23 +237,41 @@ public class AntBytesTest  {
     public void toBytesLowSigned() {
 
         TestSignedAntMessage lowTest = new TestSignedAntMessage();
-        lowTest.one = 1;
-        lowTest.two = 2;
-        lowTest.four = 4L;
+        lowTest.one = -1;
+        lowTest.two = -2;
+        lowTest.four = -4L;
 
         byte[] antBytes = impl.toAntBytes(lowTest);
 
-        assertEquals(lowBytes[0], antBytes[0]);
-        assertEquals(lowBytes[1], antBytes[1]);
-        assertEquals(lowBytes[2], antBytes[2]);
-        assertEquals(lowBytes[3], antBytes[3]);
-        assertEquals(lowBytes[4], antBytes[4]);
-        assertEquals(lowBytes[5], antBytes[5]);
-        assertEquals(lowBytes[6], antBytes[6]);
-        assertEquals(lowBytes[7], antBytes[7]);
+        assertEquals(lowBytesSigned[0], antBytes[0]);
+        assertEquals(lowBytesSigned[1], antBytes[1]);
+        assertEquals(lowBytesSigned[2], antBytes[2]);
+        assertEquals(lowBytesSigned[3], antBytes[3]);
+        assertEquals(lowBytesSigned[4], antBytes[4]);
+        assertEquals(lowBytesSigned[5], antBytes[5]);
+        assertEquals(lowBytesSigned[6], antBytes[6]);
+        assertEquals(lowBytesSigned[7], antBytes[7]);
     }
 
+    @Test
+    public void toBytesLowSigned2() {
 
+        TestSignedAntMessage2 lowTest = new TestSignedAntMessage2();
+        lowTest.one = -1;
+        lowTest.two = -2;
+        lowTest.four = -4L;
+
+        byte[] antBytes = impl.toAntBytes(lowTest);
+
+        assertEquals(lowBytesSigned[0], antBytes[0]);
+        assertEquals(lowBytesSigned[1], antBytes[1]);
+        assertEquals(lowBytesSigned[2], antBytes[2]);
+        assertEquals(lowBytesSigned[3], antBytes[3]);
+        assertEquals(lowBytesSigned[4], antBytes[4]);
+        assertEquals(lowBytesSigned[5], antBytes[5]);
+        assertEquals(lowBytesSigned[6], antBytes[6]);
+        assertEquals(lowBytesSigned[7], antBytes[7]);
+    }
     @Test
     public void toBytesSignedHigh() {
 
