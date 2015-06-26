@@ -163,17 +163,34 @@ public class BitBytes {
     }
 
     public static long inputLSB(byte[] input, int bitpos, int bitlength,boolean signed) {
-        if (bitpos % 8 != 0 ) throw new RuntimeException("not supported yet");
-        if (bitlength % 8 != 0  && signed) throw new RuntimeException("not supported yet");
+
+        int byteLength = 1;
+        int lastBitLength = 0;
+        int firstBitpos = bitpos % 8;
+
+        int firstBitLength = 8-firstBitpos;
+        firstBitLength = Math.min(firstBitLength,bitlength);
+        if (firstBitLength==0) firstBitLength=8;
+        int firstBitShift = 8-firstBitLength;
+
+        int remainingBitLength = bitlength - firstBitLength;
+        if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
+            byteLength++;
+            lastBitLength = remainingBitLength % 8;
+            remainingBitLength = remainingBitLength - lastBitLength;
+        }
+
+        if (lastBitLength==0)lastBitLength=8;
+
+
+        int lastBitShift = 8 -lastBitLength;
+        int lastMask =   (8-lastBitLength);
+        byteLength = byteLength+(remainingBitLength/8);
+
 
 
         int byteOffSet = (bitpos/8);
-        int byteLength = (bitlength/8);
-        int lastBitLength = bitlength % 8;
-        if (lastBitLength==0)lastBitLength=8;
-        int bitShift = 8 -lastBitLength;
 
-        if (bitlength % 8 !=0) byteLength++;
         byte[]  msbInput = new byte[byteLength];
 
         for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
@@ -181,15 +198,19 @@ public class BitBytes {
 
             if (msbPos==0){
 
-                byte lastByte  = (byte)   clamp( (input[i] >> bitShift),lastBitLength);
+                byte lastByte  = (byte)   clamp( (input[i] >> lastBitShift),lastBitLength);
                 msbInput[msbPos] = lastByte;
+
+            }else if (msbPos==byteLength -1) {
+                byte firstByte  = (byte)   clamp( (input[i]),firstBitLength);
+                msbInput[msbPos] =  (byte)(firstByte << firstBitShift);
 
             } else{
                 msbInput[msbPos] = input[i];
             }
         }
 
-        return input(msbInput,0,bitShift,bitlength,signed);
+        return input(msbInput,0,lastBitShift,bitlength,signed);
     }
 
 
@@ -198,24 +219,50 @@ public class BitBytes {
     }
 
     public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
-                if (bitpos % 8 != 0 ) throw new RuntimeException("not supported yet");
-                int lastBitLength = bitlength % 8;
+                if (bitlength==0) return;
+                int byteLength = 1;
+                int lastBitLength = 0;
+                int firstBitpos = bitpos % 8;
+
+                int firstBitLength = 8-firstBitpos;
+                firstBitLength = Math.min(firstBitLength,bitlength);
+                if (firstBitLength==0) firstBitLength=8;
+                int firstBitShift = 8-firstBitLength-firstBitpos;
+
+                int remainingBitLength = bitlength - firstBitLength;
+                if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
+                    byteLength++;
+                    lastBitLength = remainingBitLength % 8;
+                    remainingBitLength = remainingBitLength - lastBitLength;
+                }
+
                 if (lastBitLength==0)lastBitLength=8;
-                int bitShift = 8 -lastBitLength;
-                int mask =   (8-lastBitLength);
-                int byteLength = (bitlength/8);
-                if (bitlength % 8 !=0) byteLength++;
+
+
+                int lastBitShift = 8 -lastBitLength;
+                int lastMask =   (8-lastBitLength);
+                byteLength = byteLength+(remainingBitLength/8);
+
 
 
 
         for (int i = 0 ; i < byteLength ; i++) {
-                    int pos = bitpos / 8+i;
+                    int pos = (bitpos) / 8+i;
 
-                    if (i ==  (byteLength-1)){
+
+
+                    if (i == 0 && firstBitLength>0){
+                        long firstValue = clamp(value,firstBitLength);
+                        output[pos] = (byte)clamp(output[pos],lastMask);
+
+                        output[pos] |=  (firstValue <<firstBitShift );
+                        value >>= firstBitLength;
+
+                    }else if (i ==  (byteLength-1) && lastBitLength>0){
                        long lastValue = clamp(value,lastBitLength);
-                        output[pos] = (byte)clamp(output[pos],mask);
+                        output[pos] = (byte)clamp(output[pos],lastMask);
 
-                        output[pos] |=  (lastValue <<bitShift);
+                        output[pos] |=  (lastValue <<lastBitShift);
                     }else{
                         output[pos] = (byte) (value & 0xffL);
                         value >>= 8;

@@ -142,6 +142,8 @@ public class AntBytesTest  {
         @UXBIT(value = 1, startBit = 0, bitLength = 4)
         int one;
 
+        @UXBIT(value = 1, startBit = 7, bitLength = 1)
+        int five;
 
         @LSBU16BIT(2)
         protected int two;
@@ -167,7 +169,7 @@ public class AntBytesTest  {
     final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
     final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
     final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
-    final static byte[] lowLSBBytes = {124, 16, 2, 0, 4, 0, 0, 0};
+    final static byte[] lowLSBBytes = {124, 17, 2, 0, 4, 0, 0, 0};
 
 
     @Test
@@ -298,6 +300,8 @@ public class AntBytesTest  {
         TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
         assertNotNull(message2);
         assertEquals(1, message2.one);
+        assertEquals(1, message2.five);
+
         assertEquals(2, message2.two);
         assertEquals(4, message2.four);
         assertEquals(124, message2.page);
@@ -386,6 +390,8 @@ public class AntBytesTest  {
 
         TestLSBMessage lowTest = new TestLSBMessage();
         lowTest.one = 1;
+        lowTest.five = 1;
+
         lowTest.two = 2;
         lowTest.four = 4L;
 
