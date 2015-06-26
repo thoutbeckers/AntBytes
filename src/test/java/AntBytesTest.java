@@ -7,11 +7,13 @@ import houtbecke.rs.antbytes.AntBytesImpl;
 import houtbecke.rs.antbytes.AntBytesUtil;
 import houtbecke.rs.antbytes.LSBU16BIT;
 import houtbecke.rs.antbytes.LSBU32BIT;
+import houtbecke.rs.antbytes.LSBUXBIT;
 import houtbecke.rs.antbytes.Page;
 import houtbecke.rs.antbytes.Required;
 import houtbecke.rs.antbytes.S16BIT;
 import houtbecke.rs.antbytes.S32BIT;
 import houtbecke.rs.antbytes.S8BIT;
+import houtbecke.rs.antbytes.SXBIT;
 import houtbecke.rs.antbytes.U16BIT;
 import houtbecke.rs.antbytes.U32BIT;
 import houtbecke.rs.antbytes.U8BIT;
@@ -128,8 +130,24 @@ public class AntBytesTest  {
 
         @S32BIT(4)
         public long four;
-
     }
+
+    public static class TestSignedAntMessage2{
+        public TestSignedAntMessage2() {}
+
+        @Page(123)
+        private int page;
+
+        @SXBIT(value = 1, startBit = 0, bitLength = 4)
+        int one;
+
+        @SXBIT(value = 2, startBit = 0, bitLength = 12)
+        protected int two;
+
+        @SXBIT(value = 4, startBit = 0, bitLength = 32)
+        public long four;
+    }
+
 
 
     public static class TestLSBMessage {
@@ -139,10 +157,10 @@ public class AntBytesTest  {
         private int page;
 
 
-        @UXBIT(value = 1, startBit = 0, bitLength = 4)
+        @LSBUXBIT(value = 1, startBit = 0, bitLength = 4)
         int one;
 
-        @UXBIT(value = 1, startBit = 7, bitLength = 1)
+        @LSBUXBIT(value = 1, startBit = 7, bitLength = 1)
         int five;
 
         @LSBU16BIT(2)
@@ -161,6 +179,7 @@ public class AntBytesTest  {
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] highBytes = {123, -1, -1, -1, -1, -1, -1, -1};
     final static byte[] lowBytesSigned = {123, -1, -1, -2, -1, -1, -1, -4};
+
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
     final static byte[] requiredOneBytes = {4, 1, 0, 2, 0, 0, 0, 4};
@@ -297,6 +316,8 @@ public class AntBytesTest  {
         assertEquals(-4, message.four);
 
 
+
+
         TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
         assertNotNull(message2);
         assertEquals(1, message2.one);
@@ -305,6 +326,14 @@ public class AntBytesTest  {
         assertEquals(2, message2.two);
         assertEquals(4, message2.four);
         assertEquals(124, message2.page);
+
+
+        TestSignedAntMessage2 message3 = impl.instanceFromAntBytes(TestSignedAntMessage2.class, lowBytesSigned);
+
+        assertEquals(-1, message3.one);
+        assertEquals(-1, message3.two);
+        assertEquals(-4, message3.four);
+
 
     }
 
