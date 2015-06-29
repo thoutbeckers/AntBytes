@@ -99,7 +99,7 @@ public class BitBytes {
         long ret = 0;
         boolean negative=false;
         if (signed){
-            if   (((input[bytePos]  >> bitpos) & 1)  == 1)
+            if   (((input[bytePos]  >> (bitposInByte -1)) & 1)  == 1)
             {
                 negative =true;
             }
