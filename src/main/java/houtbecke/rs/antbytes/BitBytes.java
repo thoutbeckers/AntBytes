@@ -171,7 +171,6 @@ public class BitBytes {
         int firstBitLength = 8-firstBitpos;
         firstBitLength = Math.min(firstBitLength,bitlength);
         if (firstBitLength==0) firstBitLength=8;
-        int firstBitShift = 8-firstBitLength;
 
         int remainingBitLength = bitlength - firstBitLength;
         if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
@@ -183,11 +182,9 @@ public class BitBytes {
         if (lastBitLength==0)lastBitLength=8;
 
 
-        int lastBitShift = 8 -lastBitLength;
-        int lastMask =   (8-lastBitLength);
         byteLength = byteLength+(remainingBitLength/8);
 
-
+        int lastBitPos = 8 - lastBitLength;
 
         int byteOffSet = (bitpos/8);
 
@@ -196,21 +193,10 @@ public class BitBytes {
         for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
             int msbPos = (byteLength -1 -i + byteOffSet);
 
-            if (msbPos==0){
-
-                byte lastByte  = (byte)   clamp( (input[i] >> lastBitShift),lastBitLength);
-                msbInput[msbPos] = lastByte;
-
-            }else if (msbPos==byteLength -1) {
-                byte firstByte  = (byte)   clamp( (input[i]),firstBitLength);
-                msbInput[msbPos] =  (byte)(firstByte << firstBitShift);
-
-            } else{
                 msbInput[msbPos] = input[i];
-            }
         }
 
-        return input(msbInput,0,lastBitShift,bitlength,signed);
+        return input(msbInput,0,lastBitPos,bitlength,signed);
     }
 
 
@@ -238,37 +224,28 @@ public class BitBytes {
 
                 if (lastBitLength==0)lastBitLength=8;
 
-
-                int lastBitShift = 8 -lastBitLength;
-                int lastMask =   (8-lastBitLength);
+                int lastBitPos = 8 -lastBitLength;
                 byteLength = byteLength+(remainingBitLength/8);
+                if  (byteLength==1)
+                    lastBitPos =firstBitpos;
 
 
+        byte[]  msbOutput = new byte[byteLength];
+        int byteOffSet = (bitpos/8);
+
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
+
+            msbOutput[msbPos] = output[i];
+        }
 
 
-        for (int i = 0 ; i < byteLength ; i++) {
-                    int pos = (bitpos) / 8+i;
+        output(msbOutput,0,lastBitPos,value,bitlength);
 
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
 
-
-                    if (i == 0 && firstBitLength>0){
-                        long firstValue = clamp(value,firstBitLength);
-                        output[pos] = (byte)clamp(output[pos],lastMask);
-
-                        output[pos] |=  (firstValue <<firstBitShift );
-                        value >>= firstBitLength;
-
-                    }else if (i ==  (byteLength-1) && lastBitLength>0){
-                       long lastValue = clamp(value,lastBitLength);
-                        output[pos] = (byte)clamp(output[pos],lastMask);
-
-                        output[pos] |=  (lastValue <<lastBitShift);
-                    }else{
-                        output[pos] = (byte) (value & 0xffL);
-                        value >>= 8;
-                    }
-
-
-                 }
+             output[i] = msbOutput[msbPos];
+        }
      }
 }

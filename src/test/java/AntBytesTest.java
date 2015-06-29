@@ -138,10 +138,10 @@ public class AntBytesTest  {
         @Page(123)
         private int page=123;
 
-        @SXBIT(value = 1, startBit = 0, bitLength = 4)
+        @SXBIT(value = 1, startBit = 4, bitLength = 4)
         int one;
 
-        @SXBIT(value = 2, startBit = 0, bitLength = 12)
+        @SXBIT(value = 2, startBit = 0, bitLength = 16)
         protected int two;
 
         @SXBIT(value = 4, startBit = 0, bitLength = 32)
@@ -157,7 +157,7 @@ public class AntBytesTest  {
         private int page;
 
 
-        @LSBUXBIT(value = 1, startBit = 0, bitLength = 4)
+        @LSBUXBIT(value = 1, startBit = 4, bitLength = 4)
         int one;
 
         @LSBUXBIT(value = 1, startBit = 7, bitLength = 1)
@@ -179,6 +179,7 @@ public class AntBytesTest  {
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] highBytes = {123, -1, -1, -1, -1, -1, -1, -1};
     final static byte[] lowBytesSigned = {123, -1, -1, -2, -1, -1, -1, -4};
+    final static byte[] lowBytesSigned2 = {123, (byte)0xF, -1, -2, -1, -1, -1, -4};
 
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -188,7 +189,7 @@ public class AntBytesTest  {
     final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
     final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
     final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
-    final static byte[] lowLSBBytes = {124, 17, 2, 0, 4, 0, 0, 0};
+    final static byte[] lowLSBBytes = {124, 1, 2, 0, 4, 0, 0, 0};
 
 
     @Test
@@ -263,14 +264,14 @@ public class AntBytesTest  {
 
         byte[] antBytes = impl.toAntBytes(lowTest);
 
-        assertEquals(lowBytesSigned[0], antBytes[0]);
-        assertEquals(lowBytesSigned[1], antBytes[1]);
-        assertEquals(lowBytesSigned[2], antBytes[2]);
-        assertEquals(lowBytesSigned[3], antBytes[3]);
-        assertEquals(lowBytesSigned[4], antBytes[4]);
-        assertEquals(lowBytesSigned[5], antBytes[5]);
-        assertEquals(lowBytesSigned[6], antBytes[6]);
-        assertEquals(lowBytesSigned[7], antBytes[7]);
+        assertEquals(lowBytesSigned2[0], antBytes[0]);
+        assertEquals(lowBytesSigned2[1], antBytes[1]);
+        assertEquals(lowBytesSigned2[2], antBytes[2]);
+        assertEquals(lowBytesSigned2[3], antBytes[3]);
+        assertEquals(lowBytesSigned2[4], antBytes[4]);
+        assertEquals(lowBytesSigned2[5], antBytes[5]);
+        assertEquals(lowBytesSigned2[6], antBytes[6]);
+        assertEquals(lowBytesSigned2[7], antBytes[7]);
     }
     @Test
     public void toBytesSignedHigh() {
@@ -349,7 +350,7 @@ public class AntBytesTest  {
         TestSignedAntMessage2 message3 = impl.instanceFromAntBytes(TestSignedAntMessage2.class, lowBytesSigned);
 
         assertEquals(-1, message3.one);
-        assertEquals(-1, message3.two);
+        assertEquals(-2, message3.two);
         assertEquals(-4, message3.four);
 
 
