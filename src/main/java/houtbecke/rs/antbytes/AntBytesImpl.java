@@ -139,7 +139,7 @@ public class AntBytesImpl implements AntBytes {
                     setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value(), u32bit.startBit(), 32));
                 } else if (type == LSBUXBIT.class) {
                     LSBUXBIT uxbit = (LSBUXBIT) anon;
-                    setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
+                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
                 } else if (type == UXBIT.class) {
                     UXBIT uxbit = (UXBIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
