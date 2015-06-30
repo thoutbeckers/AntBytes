@@ -52,7 +52,7 @@ public class AntBytesImpl implements AntBytes {
                         BitBytes.outputLSB(output, lsbu32bit.value(), lsbu32bit.startBit(), getLongFromField(f, o), 32);
                     } else if (type == LSBUXBIT.class) {
                         LSBUXBIT uxbit = ((LSBUXBIT)anon);
-                        BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
+                        BitBytes.outputLSB(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
                     } else if (type == UXBIT.class) {
                         UXBIT uxbit = ((UXBIT)anon);
                         BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
