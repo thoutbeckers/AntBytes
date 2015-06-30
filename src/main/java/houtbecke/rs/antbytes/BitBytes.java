@@ -76,30 +76,62 @@ public class BitBytes {
     }
 
 
+    public static long input(byte[] input, int bytepos, int relativeBitpos, final int bitlength,boolean signed) {
+        return input(input, bytepos * 8 + relativeBitpos, bitlength,signed);
+    }
+
     public static long input(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
         return input(input, bytepos * 8 + relativeBitpos, bitlength);
     }
 
+
     public static long input(byte[] input, int bitpos, int bitlength) {
+        return input(input,bitpos,bitlength,false);
+    }
+
+    public static long input(byte[] input, int bitpos, int bitlength,boolean signed) {
+
+
 
         int bytePos = bitpos / 8;
         int bitposInByte = bitpos % 8;
         int readBits = 0;
         long ret = 0;
+        boolean negative=false;
+        if (signed){
+            if   (((input[bytePos]  >> (bitposInByte -1)) & 1)  == 1)
+            {
+                negative =true;
+            }
+
+            bitpos = bitpos +1;
+            bytePos = bitpos / 8;
+            bitposInByte = bitpos % 8;
+            bitlength= bitlength-1;
+        }
+
 
         while (readBits < bitlength) {
             // see how many bit from this byte we will read
             int bitlenInByte = Math.min(8 - bitposInByte, bitlength - readBits);
+
+
 
             // create a mask for getting the bits out the byte
             long mask = maskWithLength(bitlenInByte) << 8 - bitposInByte - bitlenInByte;
 
             // read the bits and shift them back again to be right aligned
             long valFromByte = (input[bytePos] & mask) >> 8 - bitposInByte - bitlenInByte;
+            if (negative){
+                valFromByte = (~input[bytePos] & mask) >> 8 - bitposInByte - bitlenInByte;
+                valFromByte =valFromByte;
+            }
+
 
             // shift the bits into the correct place for storing.
             ret |=  valFromByte << (bitlength - readBits - bitlenInByte);
             // obviously the above two steps can be combined, for clarity I'll leave it as is for now
+
 
 
             readBits+=bitlenInByte;
@@ -109,30 +141,62 @@ public class BitBytes {
                 bytePos++;
             }
         }
-
+        if (negative){
+            ret =  -ret -1;
+        }
         return ret;
     }
 
-    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
-        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength,false);
+
+
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength,boolean signed) {
+        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength, signed);
     }
 
-    public static long inputLSB (byte[] input, int bitpos, int bitlength, boolean signed) {
-        if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
+        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength);
+    }
 
-        long result = 0;
-        for (int i =   (bitpos / 8 + bitlength / 8) -1 ; i >= bitpos / 8  ;  i--) {
-            result <<= 8;
 
-            if (signed) {
-                result += input[i];
-                signed= false;
-            }else{
-                result += input[i] & 0xFF;
+    public static long inputLSB(byte[] input, int bitpos, int bitlength) {
+        return inputLSB(input, bitpos, bitlength, false);
+    }
 
-            }
+    public static long inputLSB(byte[] input, int bitpos, int bitlength,boolean signed) {
+
+        int byteLength = 1;
+        int lastBitLength = 0;
+        int firstBitpos = bitpos % 8;
+
+        int firstBitLength = 8-firstBitpos;
+        firstBitLength = Math.min(firstBitLength,bitlength);
+        if (firstBitLength==0) firstBitLength=8;
+
+        int remainingBitLength = bitlength - firstBitLength;
+        if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
+            byteLength++;
+            lastBitLength = remainingBitLength % 8;
+            remainingBitLength = remainingBitLength - lastBitLength;
         }
-        return result;
+
+        if (lastBitLength==0)lastBitLength=8;
+
+
+        byteLength = byteLength+(remainingBitLength/8);
+
+        int lastBitPos = 8 - lastBitLength;
+
+        int byteOffSet = (bitpos/8);
+
+        byte[]  msbInput = new byte[byteLength];
+
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
+
+                msbInput[msbPos] = input[i];
+        }
+
+        return input(msbInput,0,lastBitPos,bitlength,signed);
     }
 
 
@@ -141,12 +205,47 @@ public class BitBytes {
     }
 
     public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
-                if (bitpos % 8 != 0 || bitlength % 8 != 0) throw new RuntimeException("not supported yet");
-                int pos = bitpos / 8;
+                if (bitlength==0) return;
+                int byteLength = 1;
+                int lastBitLength = 0;
+                int firstBitpos = bitpos % 8;
 
-                for (int i = 0 ; i < bitlength / 8 ; i++) {
-                        output[bitpos / 8 + i] = (byte) (value & 0xffL);
-                        value >>= 8;
-                 }
+                int firstBitLength = 8-firstBitpos;
+                firstBitLength = Math.min(firstBitLength,bitlength);
+                if (firstBitLength==0) firstBitLength=8;
+                int firstBitShift = 8-firstBitLength-firstBitpos;
+
+                int remainingBitLength = bitlength - firstBitLength;
+                if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
+                    byteLength++;
+                    lastBitLength = remainingBitLength % 8;
+                    remainingBitLength = remainingBitLength - lastBitLength;
+                }
+
+                if (lastBitLength==0)lastBitLength=8;
+
+                int lastBitPos = 8 -lastBitLength;
+                byteLength = byteLength+(remainingBitLength/8);
+                if  (byteLength==1)
+                    lastBitPos =firstBitpos;
+
+
+        byte[]  msbOutput = new byte[byteLength];
+        int byteOffSet = (bitpos/8);
+
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
+
+            msbOutput[msbPos] = output[i];
+        }
+
+
+        output(msbOutput,0,lastBitPos,value,bitlength);
+
+        for(int i =0+byteOffSet; i< byteLength+byteOffSet;i++){
+            int msbPos = (byteLength -1 -i + byteOffSet);
+
+             output[i] = msbOutput[msbPos];
+        }
      }
 }

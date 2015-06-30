@@ -50,9 +50,24 @@ public class AntBytesImpl implements AntBytes {
                     } else if (type == LSBU32BIT.class) {
                         LSBU32BIT lsbu32bit = (LSBU32BIT)anon;
                         BitBytes.outputLSB(output, lsbu32bit.value(), lsbu32bit.startBit(), getLongFromField(f, o), 32);
+                    } else if (type == LSBUXBIT.class) {
+                        LSBUXBIT uxbit = ((LSBUXBIT)anon);
+                        BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
                     } else if (type == UXBIT.class) {
                         UXBIT uxbit = ((UXBIT)anon);
                         BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
+                    } else if (type == S8BIT.class) {
+                        S8BIT s8bit = (S8BIT) anon;
+                        BitBytes.output(output, s8bit.value(), s8bit.startBit(), getLongFromField(f, o), 8);
+                    } else if (type == S16BIT.class) {
+                        S16BIT s16bit = (S16BIT) anon;
+                        BitBytes.output(output, s16bit.value(), s16bit.startBit(), getLongFromField(f, o), 16);
+                    } else if (type == S32BIT.class) {
+                        S32BIT s32bit = (S32BIT)anon;
+                        BitBytes.output(output, s32bit.value(), s32bit.startBit(), getLongFromField(f, o), 32);
+                    } else if (type == SXBIT.class) {
+                        SXBIT sxbit = ((SXBIT)anon);
+                        BitBytes.output(output, sxbit.value(), sxbit.startBit(), getLongFromField(f, o), sxbit.bitLength());
                     } else if (type == Page.class) {
                         BitBytes.output(output, 0, ((Page)anon).value(), 8);
                     }
@@ -122,9 +137,24 @@ public class AntBytesImpl implements AntBytes {
                 } else if (type == LSBU32BIT.class) {
                     LSBU32BIT u32bit = (LSBU32BIT)anon;
                     setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value(), u32bit.startBit(), 32));
+                } else if (type == LSBUXBIT.class) {
+                    LSBUXBIT uxbit = (LSBUXBIT) anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
                 } else if (type == UXBIT.class) {
                     UXBIT uxbit = (UXBIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
+                } else if (type == S8BIT.class) {
+                    S8BIT s8bit = (S8BIT) anon;
+                    setIntOnField(f, object, BitBytes.input(antBytes, s8bit.value(), s8bit.startBit(), 8,true));
+                } else if (type == S16BIT.class) {
+                    S16BIT s16bit = (S16BIT) anon;
+                    setIntOnField(f, object, BitBytes.input(antBytes, s16bit.value(), s16bit.startBit(), 16,true));
+                } else if (type == S32BIT.class) {
+                    S32BIT s32bit = (S32BIT)anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, s32bit.value(), s32bit.startBit(), 32,true));
+                } else if (type == SXBIT.class) {
+                    SXBIT sxbit = (SXBIT) anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, sxbit.value(), sxbit.startBit(), sxbit.bitLength(),true));
                 } else if (type == Page.class) {
                     setIntOnField(f, object, BitBytes.input(antBytes, 0, 8));
                 }
