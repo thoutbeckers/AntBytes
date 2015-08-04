@@ -195,8 +195,11 @@ public class BitBytes {
 
                 msbInput[msbPos] = input[i];
         }
-
-        return input(msbInput,0,lastBitPos,bitlength,signed);
+        if (byteLength == 1){
+            return input(msbInput, 0, firstBitpos, bitlength, signed);
+        }else {
+            return input(msbInput, 0, lastBitPos, bitlength, signed);
+        }
     }
 
 

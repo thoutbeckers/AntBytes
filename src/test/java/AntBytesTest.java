@@ -154,14 +154,10 @@ public class AntBytesTest  {
         public TestLSBMessage() {}
 
         @Page(123)
-        private int page;
-
-
-        @LSBUXBIT(value = 1, startBit = 4, bitLength = 4)
-        int one;
+        private int page = 123;
 
         @LSBUXBIT(value = 1, startBit = 7, bitLength = 1)
-        int five;
+        protected int one;
 
         @LSBU16BIT(2)
         protected int two;
@@ -171,7 +167,17 @@ public class AntBytesTest  {
 
     }
 
+    public static class TestLSBMessage2 {
+        public TestLSBMessage2() {}
 
+        @Page(123)
+        private int page = 123;
+
+        @LSBUXBIT(value = 1, startBit = 4, bitLength = 12)
+        protected int one;
+;
+
+    }
 
 
     AntBytes impl = AntBytesUtil.getInstance();
@@ -180,7 +186,8 @@ public class AntBytesTest  {
     final static byte[] highBytes = {123, -1, -1, -1, -1, -1, -1, -1};
     final static byte[] lowBytesSigned = {123, -1, -1, -2, -1, -1, -1, -4};
     final static byte[] lowBytesSigned2 = {123, (byte)0xF, -1, -2, -1, -1, -1, -4};
-    final static byte[] lowLSBBytes = {123, 1, 2, 0, 4, 0, 0, 0};
+    final static byte[] lowLSBBytes = {123, 1, 2, 0, 4, 0, 0,0};
+    final static byte[] lowLSBBytes2 = {123, (byte)0b11110000,(byte)0b11111111,0, 0, 0, 0, 0};
 
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -362,13 +369,14 @@ public class AntBytesTest  {
         TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
         assertNotNull(message2);
         assertEquals(1, message2.one);
-        assertEquals(1, message2.five);
-
         assertEquals(2, message2.two);
         assertEquals(4, message2.four);
         assertEquals(123, message2.page);
 
 
+        TestLSBMessage2 message3 = impl.instanceFromAntBytes(TestLSBMessage2.class, lowLSBBytes2);
+        assertNotNull(message3);
+        assertEquals(4095, message3.one);
 
 
     }
@@ -456,8 +464,6 @@ public class AntBytesTest  {
 
         TestLSBMessage lowTest = new TestLSBMessage();
         lowTest.one = 1;
-        lowTest.five = 1;
-
         lowTest.two = 2;
         lowTest.four = 4L;
 
@@ -473,4 +479,24 @@ public class AntBytesTest  {
         assertEquals(lowLSBBytes[7], antBytes[7]);
     }
 
+
+
+    @Test
+    public void toLSBytesLow2() {
+
+        TestLSBMessage2 lowTest = new TestLSBMessage2();
+
+        lowTest.one = 4095;
+
+        byte[] antBytes = impl.toAntBytes(lowTest);
+
+        assertEquals(lowLSBBytes2[0], antBytes[0]);
+        assertEquals(lowLSBBytes2[1], antBytes[1]);
+        assertEquals(lowLSBBytes2[2], antBytes[2]);
+        assertEquals(lowLSBBytes2[3], antBytes[3]);
+        assertEquals(lowLSBBytes2[4], antBytes[4]);
+        assertEquals(lowLSBBytes2[5], antBytes[5]);
+        assertEquals(lowLSBBytes2[6], antBytes[6]);
+        assertEquals(lowLSBBytes2[7], antBytes[7]);
+    }
 }
