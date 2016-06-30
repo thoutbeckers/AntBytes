@@ -10,8 +10,8 @@ buildscript {
     dependencies {
 
         // make sure an up to date version of httpmime is used for the coveralls plugin
-        classpath 'org.apache.httpcomponents:httpmime:4.3'
-        classpath 'org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.0.1'
+        classpath "org.apache.httpcomponents:httpmime:${httpmimeVersion}"
+        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${coverallsGradlePluginVersion}"
     }
 }
 
@@ -23,7 +23,7 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    testCompile 'junit:junit:4.12'
+    testCompile "junit:junit:${junitVersion}"
 }
 
 jacocoTestReport {
