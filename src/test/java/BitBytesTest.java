@@ -165,6 +165,30 @@ public class BitBytesTest {
         Assert.assertEquals(-1,BitBytes.inputLSB( new byte[]{(byte)0xFF, (byte) 0xFF, 0,0, 0,0,0,0},0,16,true));
 
 
+
+
+
+        Assert.assertEquals(4095,BitBytes.inputLSB( new byte[]{(byte)0b11111111, (byte) 0b00001111, 0},0,12,false));
+        Assert.assertEquals(4095,BitBytes.inputLSB( new byte[]{(byte)0b11110000, (byte) 0b11111111, 0},4,12,false));
+        Assert.assertEquals(4095, BitBytes.inputLSB(new byte[]{0, (byte) 0b11110000, (byte) 0b11111111, 0}, 12, 12, false));
+
+        Assert.assertEquals(1023, BitBytes.inputLSB(new byte[]{(byte) 0b11000000, (byte) 0b11111111, 0}, 6, 10, false));
+
+
+
+
+
+
+        Assert.assertEquals(255,BitBytes.inputLSB( new byte[]{(byte)0b11111111, 0, 0},0,8,false));
+        Assert.assertEquals(240,BitBytes.inputLSB( new byte[]{(byte)0b11110000, 0, 0},0,8,false));
+        Assert.assertEquals(15,BitBytes.inputLSB( new byte[]{(byte)0b00001111, 0, 0},4,4,false));
+
+
+        Assert.assertEquals(1, BitBytes.inputLSB(new byte[]{(byte) 0b00000001, 0, 0}, 7, 1, false));
+        Assert.assertEquals(1,BitBytes.inputLSB(new byte[]{0, (byte) 0b00000001, 0, 0}, 15, 1, false));
+
+
+
         Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{1, 0, 0,0, 0,0,0,0},0,12,false));
 
         Assert.assertEquals(1,BitBytes.inputLSB( new byte[]{0, 1, 0,0, 0,0,0,0},8,12,false));
@@ -179,6 +203,13 @@ public class BitBytesTest {
 
         Assert.assertEquals(3841,BitBytes.inputLSB(new byte[]{(byte) 0x0, (byte) 0b01000000, (byte) 0b11000000, (byte) 0b00000011,(byte)0x0}, 14, 12, false));
 
+
+
+        Assert.assertEquals(1,BitBytes.inputLSB(new byte[]{ (byte) 0b000_0001,(byte) 0x0, (byte) 0b11000000, (byte) 0b00000011,(byte)0x0}, 0, 16, false));
+
+        Assert.assertEquals(1,BitBytes.inputLSB(new byte[]{ (byte) 0b001_0000,(byte) 0x0, (byte) 0b11000000, (byte) 0b00000011,(byte)0x0}, 4, 12, false));
+
+        Assert.assertEquals(1,BitBytes.inputLSB(new byte[]{(byte) 0x0, (byte) 0b0000_0001, (byte) 0b11000000, (byte) 0b00000011,(byte)0x0}, 12, 4, false));
 
 
     }
@@ -211,6 +242,47 @@ public class BitBytesTest {
         BitBytes.outputLSB(output, 10, 1, 1);
         Assert.assertEquals("00000000_00100000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
 
+        output = new byte[3];
+        BitBytes.outputLSB(output, 10, 1, 2);
+        Assert.assertEquals("00000000_00010000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 10, 2, 2);
+        Assert.assertEquals("00000000_00100000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 1, 12);
+        Assert.assertEquals("00000001_00000000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 128, 12);
+        Assert.assertEquals("10000000_00000000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 2048, 12);
+        Assert.assertEquals("00000000_00001000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 4095, 12);
+        Assert.assertEquals("11111111_00001111_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 3071, 12);
+        Assert.assertEquals("11111111_00001011_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 4, 4095, 12);
+        Assert.assertEquals("11110000_11111111_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+
+        output = new byte[3];
+        BitBytes.outputLSB(output, 0, 2048, 12);
+        Assert.assertEquals("00000000_00001000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
 
 
         output = new byte[3];
@@ -226,6 +298,15 @@ public class BitBytesTest {
         Assert.assertEquals("00010000_11110000_00000000".replaceAll("_", ""), BitBytes.toPaddedString(output));
 
 
+
+        output = new byte[1];
+        BitBytes.outputLSB(output, 7, 1, 1);
+        Assert.assertEquals("00000001".replaceAll("_", ""), BitBytes.toPaddedString(output));
+
+
+        output = new byte[2];
+        BitBytes.outputLSB(output, 15, 1, 1);
+        Assert.assertEquals("00000000_00000001".replaceAll("_", ""), BitBytes.toPaddedString(output));
 
 
     }
