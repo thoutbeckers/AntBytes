@@ -2,7 +2,6 @@ package houtbecke.rs.antbytes;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +22,17 @@ public class AntBytesImpl implements AntBytes {
         return ret;
     }
 
+    protected boolean getBooleanFromField(Field f, Object o) throws IllegalAccessException {
+        boolean changed = false;
+        if (!f.isAccessible())
+            f.setAccessible(changed = true);
+
+        boolean ret = f.getBoolean(o);
+        if (changed)
+            f.setAccessible(false);
+        return ret;
+    }
+
     @Override
     public <T>byte[] toAntBytes(T o) {
         return toAntBytes(o,8);
@@ -31,53 +41,118 @@ public class AntBytesImpl implements AntBytes {
     @Override
     public <T> byte[] toAntBytes(T o, int size) {
         byte[] output = new byte[size];
-        for (Field f: o.getClass().getDeclaredFields())
-            for (Annotation anon: f.getAnnotations())
+        int dynamicByte =0;
+        HashMap<Integer,Boolean> flags = new HashMap<>();
+
+
+
+        for (Field f: o.getClass().getDeclaredFields()) {
+            for (Annotation anon : f.getAnnotations()){
                 try {
                     Class type = anon.annotationType();
-                    if (type == U8BIT.class) {
+                    if (type == Flag.class) {
+                        Flag flag = (Flag) anon;
+                        boolean flagValue = getBooleanFromField(f, o);
+                        if (flag.startByte() ==0 )
+                             flags.put(flag.value(),flagValue);
+                    }
+
+                } catch (IllegalAccessException ignore) {
+                }
+
+            }
+
+            Dynamic dynamic = f.getAnnotation(Dynamic.class);
+            int moveByte=0;
+
+            if (dynamic!=null){
+                if (flags.containsKey(dynamic.value()) && flags.get(dynamic.value())) {
+                    moveByte = dynamicByte;
+                } else {
+                    dynamic = null;
+                }
+            }
+
+            for (Annotation anon : f.getAnnotations())
+                try {
+                    Class type = anon.annotationType();
+                    if (type == Flag.class) {
+                        Flag flag = (Flag) anon;
+                        int positionInByte = 7 - (flag.value() % 8);
+                        int byteNr = flag.startByte() + (flag.value() / 8);
+                        BitBytes.output(output, byteNr, positionInByte, getBooleanFromField(f, o)?1:0, 1);
+                    } else if (type == U8BIT.class) {
                         U8BIT u8bit = (U8BIT) anon;
-                        BitBytes.output(output, u8bit.value(), u8bit.startBit(), getLongFromField(f, o), 8);
+                        BitBytes.output(output, u8bit.value() + moveByte, u8bit.startBit(), getLongFromField(f, o), 8);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 1;
                     } else if (type == U16BIT.class) {
                         U16BIT u16bit = (U16BIT) anon;
-                        BitBytes.output(output, u16bit.value(), u16bit.startBit(), getLongFromField(f, o), 16);
+                        BitBytes.output(output, u16bit.value() + moveByte, u16bit.startBit(), getLongFromField(f, o), 16);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 2;
                     } else if (type == U32BIT.class) {
-                        U32BIT u32bit = (U32BIT)anon;
-                        BitBytes.output(output, u32bit.value(), u32bit.startBit(), getLongFromField(f, o), 32);
+                        U32BIT u32bit = (U32BIT) anon;
+                        BitBytes.output(output, u32bit.value() + moveByte, u32bit.startBit(), getLongFromField(f, o), 32);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 4;
                     } else if (type == LSBU16BIT.class) {
                         LSBU16BIT lsbu16bit = (LSBU16BIT) anon;
-                        BitBytes.outputLSB(output, lsbu16bit.value(), lsbu16bit.startBit(), getLongFromField(f, o), 16);
+                        BitBytes.outputLSB(output, lsbu16bit.value() + moveByte, lsbu16bit.startBit(), getLongFromField(f, o), 16);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 2;
                     } else if (type == LSBU32BIT.class) {
-                        LSBU32BIT lsbu32bit = (LSBU32BIT)anon;
-                        BitBytes.outputLSB(output, lsbu32bit.value(), lsbu32bit.startBit(), getLongFromField(f, o), 32);
+                        LSBU32BIT lsbu32bit = (LSBU32BIT) anon;
+                        BitBytes.outputLSB(output, lsbu32bit.value() + moveByte, lsbu32bit.startBit(), getLongFromField(f, o), 32);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 4;
                     } else if (type == LSBUXBIT.class) {
-                        LSBUXBIT uxbit = ((LSBUXBIT)anon);
+                        LSBUXBIT uxbit = ((LSBUXBIT) anon);
                         BitBytes.outputLSB(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
                     } else if (type == UXBIT.class) {
-                        UXBIT uxbit = ((UXBIT)anon);
+                        UXBIT uxbit = ((UXBIT) anon);
                         BitBytes.output(output, uxbit.value(), uxbit.startBit(), getLongFromField(f, o), uxbit.bitLength());
                     } else if (type == S8BIT.class) {
                         S8BIT s8bit = (S8BIT) anon;
-                        BitBytes.output(output, s8bit.value(), s8bit.startBit(), getLongFromField(f, o), 8);
+                        BitBytes.output(output, s8bit.value() + moveByte, s8bit.startBit(), getLongFromField(f, o), 8);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 1;
                     } else if (type == S16BIT.class) {
                         S16BIT s16bit = (S16BIT) anon;
-                        BitBytes.output(output, s16bit.value(), s16bit.startBit(), getLongFromField(f, o), 16);
+                        BitBytes.output(output, s16bit.value() + moveByte, s16bit.startBit(), getLongFromField(f, o), 16);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 2;
                     } else if (type == S32BIT.class) {
-                        S32BIT s32bit = (S32BIT)anon;
-                        BitBytes.output(output, s32bit.value(), s32bit.startBit(), getLongFromField(f, o), 32);
+                        S32BIT s32bit = (S32BIT) anon;
+                        BitBytes.output(output, s32bit.value() + moveByte, s32bit.startBit(), getLongFromField(f, o), 32);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 4;
                     } else if (type == SXBIT.class) {
-                        SXBIT sxbit = ((SXBIT)anon);
+                        SXBIT sxbit = ((SXBIT) anon);
                         BitBytes.output(output, sxbit.value(), sxbit.startBit(), getLongFromField(f, o), sxbit.bitLength());
                     } else if (type == Page.class) {
-                        BitBytes.output(output, 0, ((Page)anon).value(), 8);
+                        BitBytes.output(output, 0, ((Page) anon).value(), 8);
                     }
 
-                } catch (IllegalAccessException ignore) {}
+                } catch (IllegalAccessException ignore) {
+                }
+        }
         return output;
     }
 
 
+    protected void setBooleanOnField(Field field, Object object, boolean value)  {
+        boolean changed = false;
+        if (!field.isAccessible())
+            field.setAccessible(changed = true);
+        try {
+            field.setBoolean(object, value);
+        } catch (IllegalAccessException ignore) {
+        }
 
+        if (changed)
+            field.setAccessible(false);
+    }
 
     protected void setLongOnField(Field field, Object object, long value)  {
         setOnField(true, field, object, value);
@@ -119,47 +194,90 @@ public class AntBytesImpl implements AntBytes {
 
     @Override
     public <T>T fromAntBytes(T object, byte[] antBytes) {
-        for (Field f: object.getClass().getDeclaredFields())
-            for (Annotation anon: f.getAnnotations()) {
+        final HashMap<Integer,Boolean> flags = new HashMap<>();
+        int dynamicByte = 0;
+        for (Field f: object.getClass().getDeclaredFields()){
+            for (Annotation anon : f.getAnnotations()) {
+                    Class type = anon.annotationType();
+                    if (type == Flag.class) {
+                        Flag flag = (Flag) anon;
+                        int positionInByte = 7 - (flag.value() % 8);
+                        int byteNr = flag.startByte() + (flag.value() / 8);
+                        boolean flagValue =BitBytes.input(antBytes, byteNr, positionInByte, 1)==1;
+                        setBooleanOnField(f, object,flagValue);
+                        if (flag.startByte() == 0)
+                            flags.put(flag.value(), flagValue);
+                        }
+            }
+
+            Dynamic dynamic = f.getAnnotation(Dynamic.class);
+            int moveByte = 0;
+
+            if (dynamic != null) {
+                if (flags.containsKey(dynamic.value()) && flags.get(dynamic.value())) {
+                    moveByte = dynamicByte;
+                } else {
+                    dynamic = null;
+                }
+            }
+
+
+            for (Annotation anon : f.getAnnotations()) {
                 Class type = anon.annotationType();
                 if (type == U8BIT.class) {
                     U8BIT u8bit = (U8BIT) anon;
-                    setIntOnField(f, object, BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8));
+                    setIntOnField(f, object, BitBytes.input(antBytes, u8bit.value() + moveByte, u8bit.startBit(), 8));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 1;
                 } else if (type == U16BIT.class) {
                     U16BIT u16bit = (U16BIT) anon;
-                    setIntOnField(f, object, BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16));
+                    setIntOnField(f, object, BitBytes.input(antBytes, u16bit.value() + moveByte, u16bit.startBit(), 16));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 2;
                 } else if (type == U32BIT.class) {
-                    U32BIT u32bit = (U32BIT)anon;
-                    setLongOnField(f, object, BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32));
+                    U32BIT u32bit = (U32BIT) anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, u32bit.value() + moveByte, u32bit.startBit(), 32));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 4;
                 } else if (type == LSBU16BIT.class) {
                     LSBU16BIT lsbu16bit = (LSBU16BIT) anon;
-                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbu16bit.value(), lsbu16bit.startBit(), 16));
+                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbu16bit.value() + moveByte, lsbu16bit.startBit(), 16));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 2;
                 } else if (type == LSBU32BIT.class) {
-                    LSBU32BIT u32bit = (LSBU32BIT)anon;
-                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value(), u32bit.startBit(), 32));
+                    LSBU32BIT u32bit = (LSBU32BIT) anon;
+                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value() + moveByte, u32bit.startBit(), 32));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 4;
                 } else if (type == LSBUXBIT.class) {
                     LSBUXBIT uxbit = (LSBUXBIT) anon;
-                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
+                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, uxbit.value()+ moveByte, uxbit.startBit(), uxbit.bitLength()));
                 } else if (type == UXBIT.class) {
                     UXBIT uxbit = (UXBIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
                 } else if (type == S8BIT.class) {
                     S8BIT s8bit = (S8BIT) anon;
-                    setIntOnField(f, object, BitBytes.input(antBytes, s8bit.value(), s8bit.startBit(), 8,true));
+                    setIntOnField(f, object, BitBytes.input(antBytes, s8bit.value() + moveByte, s8bit.startBit(), 8, true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 1;
                 } else if (type == S16BIT.class) {
                     S16BIT s16bit = (S16BIT) anon;
-                    setIntOnField(f, object, BitBytes.input(antBytes, s16bit.value(), s16bit.startBit(), 16,true));
+                    setIntOnField(f, object, BitBytes.input(antBytes, s16bit.value() + moveByte, s16bit.startBit(), 16, true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 2;
                 } else if (type == S32BIT.class) {
-                    S32BIT s32bit = (S32BIT)anon;
-                    setLongOnField(f, object, BitBytes.input(antBytes, s32bit.value(), s32bit.startBit(), 32,true));
+                    S32BIT s32bit = (S32BIT) anon;
+                    setLongOnField(f, object, BitBytes.input(antBytes, s32bit.value() + moveByte, s32bit.startBit(), 32, true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 4;
                 } else if (type == SXBIT.class) {
                     SXBIT sxbit = (SXBIT) anon;
-                    setLongOnField(f, object, BitBytes.input(antBytes, sxbit.value(), sxbit.startBit(), sxbit.bitLength(),true));
+                    setLongOnField(f, object, BitBytes.input(antBytes, sxbit.value(), sxbit.startBit(), sxbit.bitLength(), true));
                 } else if (type == Page.class) {
                     setIntOnField(f, object, BitBytes.input(antBytes, 0, 8));
                 }
             }
-
+        }
         return object;
     }
 
