@@ -507,6 +507,7 @@ public class AntBytesTest  {
         Object message6 =  impl.fromAntBytes(requiredSixBytes);
         assertNull(message6);
     }
+
     @Test
     public void toLSBytesLow() {
 
@@ -527,8 +528,6 @@ public class AntBytesTest  {
         assertEquals(lowLSBBytes[7], antBytes[7]);
     }
 
-
-
     @Test
     public void toLSBytesLow2() {
 
@@ -548,8 +547,6 @@ public class AntBytesTest  {
         assertEquals(lowLSBBytes2[7], antBytes[7]);
     }
 
-
-
     @Test
     public void fromFlagBytes() {
 
@@ -562,7 +559,6 @@ public class AntBytesTest  {
         assertEquals(true,message.flag7);
         assertEquals(true,message.flag8);
         assertEquals(true,message.flag16);
-
     }
 
     @Test
@@ -580,11 +576,7 @@ public class AntBytesTest  {
         byte[] antBytes = impl.toAntBytes(testFlagMessage, 8);
 
         assertArrayEquals(flagBytes, antBytes);
-
     }
-
-
-
 
     @Test
     public void fromDynamicBytes() {
