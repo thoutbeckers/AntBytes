@@ -1,10 +1,9 @@
 import org.junit.Test;
 
-import java.util.Arrays;
-
 import houtbecke.rs.antbytes.AntBytes;
-import houtbecke.rs.antbytes.AntBytesImpl;
 import houtbecke.rs.antbytes.AntBytesUtil;
+import houtbecke.rs.antbytes.Dynamic;
+import houtbecke.rs.antbytes.Flag;
 import houtbecke.rs.antbytes.LSBU16BIT;
 import houtbecke.rs.antbytes.LSBU32BIT;
 import houtbecke.rs.antbytes.LSBUXBIT;
@@ -180,6 +179,105 @@ public class AntBytesTest  {
     }
 
 
+    public static class TestFlagMessage{
+        public TestFlagMessage() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+        @Flag(2)
+        private boolean flag2;
+        @Flag(7)
+        private boolean flag7;
+        @Flag(8)
+        private boolean flag8;
+
+        @Flag(value = 0,startByte = 2)
+        private boolean flag16;
+
+    }
+
+    public static class TestFlagDynamicMessage{
+        public TestFlagDynamicMessage() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+        @Flag(2)
+        private boolean flag2;
+
+        @Dynamic(0)
+        @U8BIT(1)
+        private int byte0;
+
+        @Dynamic(1)
+        @U16BIT(1)
+        private int byte1;
+
+        @Dynamic(2)
+        @U32BIT(1)
+        private int byte2;
+    }
+
+
+    public static class TestFlagDynamicMessage2{
+        public TestFlagDynamicMessage2() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+        @Flag(2)
+        private boolean flag2;
+
+        @Dynamic(0)
+        @S8BIT(1)
+        private int byte0;
+
+        @Dynamic(1)
+        @S16BIT(1)
+        private int byte1;
+
+        @Dynamic(2)
+        @S32BIT(1)
+        private int byte2;
+    }
+
+    public static class TestFlagDynamicMessage3{
+        public TestFlagDynamicMessage3() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+        @Flag(2)
+        private boolean flag2;
+
+        @Dynamic(0)
+        @S8BIT(1)
+        private int byte0;
+
+        @Dynamic(1)
+        @LSBU16BIT(1)
+        private int byte1;
+
+        @Dynamic(2)
+        @LSBU32BIT(1)
+        private int byte2;
+    }
+
+
+
     AntBytes impl = AntBytesUtil.getInstance();
 
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
@@ -188,6 +286,11 @@ public class AntBytesTest  {
     final static byte[] lowBytesSigned2 = {123, (byte)0xF, -1, -2, -1, -1, -1, -4};
     final static byte[] lowLSBBytes = {123, 1, 2, 0, 4, 0, 0,0};
     final static byte[] lowLSBBytes2 = {123, (byte)0b11110000,(byte)0b11111111,0, 0, 0, 0, 0};
+    final static byte[] flagBytes = {(byte)0b10000011, (byte)0b00000001,(byte)0b00000001,0, 0, 0, 0, 0};
+    final static byte[] dynamicBytes1 = {(byte)0b00000111, 1,0, 2, 0, 0, 0,3};
+    final static byte[] dynamicBytes2 = {(byte)0b00000100, 0,0, 0, 3, 0, 0,0};
+    final static byte[] dynamicBytes3 = {(byte)0b00000111, 1,2, 0, 3, 0, 0,0};
+
 
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -459,6 +562,7 @@ public class AntBytesTest  {
         Object message6 =  impl.fromAntBytes(requiredSixBytes);
         assertNull(message6);
     }
+
     @Test
     public void toLSBytesLow() {
 
@@ -479,8 +583,6 @@ public class AntBytesTest  {
         assertEquals(lowLSBBytes[7], antBytes[7]);
     }
 
-
-
     @Test
     public void toLSBytesLow2() {
 
@@ -499,4 +601,139 @@ public class AntBytesTest  {
         assertEquals(lowLSBBytes2[6], antBytes[6]);
         assertEquals(lowLSBBytes2[7], antBytes[7]);
     }
+
+    @Test
+    public void fromFlagBytes() {
+
+
+        TestFlagMessage message = impl.instanceFromAntBytes(TestFlagMessage.class, flagBytes);
+
+        assertEquals(true, message.flag0);
+        assertEquals(true ,message.flag1);
+        assertEquals(false, message.flag2);
+        assertEquals(true,message.flag7);
+        assertEquals(true,message.flag8);
+        assertEquals(true,message.flag16);
+    }
+
+    @Test
+    public void toFlagBytes() {
+
+        TestFlagMessage testFlagMessage = new TestFlagMessage();
+
+        testFlagMessage.flag0 = true;
+        testFlagMessage.flag1 = true;
+        testFlagMessage.flag2 = false;
+        testFlagMessage.flag7 = true;
+        testFlagMessage.flag8 = true;
+        testFlagMessage.flag16 = true;
+
+        byte[] antBytes = impl.toAntBytes(testFlagMessage, 8);
+
+        assertArrayEquals(flagBytes, antBytes);
+    }
+
+    @Test
+    public void fromDynamicBytes() {
+
+
+        TestFlagDynamicMessage message = impl.instanceFromAntBytes(TestFlagDynamicMessage.class, dynamicBytes1);
+
+        assertEquals(true, message.flag0);
+        assertEquals(true ,message.flag1);
+        assertEquals(true, message.flag2);
+        assertEquals(1,message.byte0);
+        assertEquals(2,message.byte1);
+        assertEquals(3,message.byte2);
+
+        TestFlagDynamicMessage message2 = impl.instanceFromAntBytes(TestFlagDynamicMessage.class, dynamicBytes2);
+
+        assertEquals(false, message2.flag0);
+        assertEquals(false ,message2.flag1);
+        assertEquals(true, message2.flag2);
+        assertEquals(0,message2.byte0);
+        assertEquals(0,message2.byte1);
+        assertEquals(3,message2.byte2);
+
+
+
+        TestFlagDynamicMessage2 message3 = impl.instanceFromAntBytes(TestFlagDynamicMessage2.class, dynamicBytes1);
+
+        assertEquals(true, message3.flag0);
+        assertEquals(true ,message3.flag1);
+        assertEquals(true, message3.flag2);
+        assertEquals(1,message3.byte0);
+        assertEquals(2,message3.byte1);
+        assertEquals(3,message3.byte2);
+
+
+        TestFlagDynamicMessage3 message4 = impl.instanceFromAntBytes(TestFlagDynamicMessage3.class, dynamicBytes3);
+
+        assertEquals(true, message4.flag0);
+        assertEquals(true ,message4.flag1);
+        assertEquals(true, message4.flag2);
+        assertEquals(1,message4.byte0);
+        assertEquals(2,message4.byte1);
+        assertEquals(3,message4.byte2);
+
+    }
+
+    @Test
+    public void toDynamicBytes() {
+
+        TestFlagDynamicMessage dynamicMessage1 = new TestFlagDynamicMessage();
+
+        dynamicMessage1.flag0 = true;
+        dynamicMessage1.flag1 = true;
+        dynamicMessage1.flag2 = true;
+        dynamicMessage1.byte0 = 1;
+        dynamicMessage1.byte1 = 2;
+        dynamicMessage1.byte2 = 3;
+
+        byte[] antBytes1 = impl.toAntBytes(dynamicMessage1, 8);
+
+        assertArrayEquals(dynamicBytes1, antBytes1);
+
+        TestFlagDynamicMessage dynamicMessage2 = new TestFlagDynamicMessage();
+
+        dynamicMessage2.flag0 = false;
+        dynamicMessage2.flag1 = false;
+        dynamicMessage2.flag2 = true;
+        dynamicMessage2.byte0 = 0;
+        dynamicMessage2.byte1 = 0;
+        dynamicMessage2.byte2 = 3;
+
+        byte[] antBytes2 = impl.toAntBytes(dynamicMessage2, 8);
+
+        assertArrayEquals(dynamicBytes2, antBytes2);
+
+
+        TestFlagDynamicMessage3 dynamicMessage3 = new TestFlagDynamicMessage3();
+
+        dynamicMessage3.flag0 = true;
+        dynamicMessage3.flag1 = true;
+        dynamicMessage3.flag2 = true;
+        dynamicMessage3.byte0 = 1;
+        dynamicMessage3.byte1 = 2;
+        dynamicMessage3.byte2 = 3;
+
+        byte[] antBytes3 = impl.toAntBytes(dynamicMessage3, 8);
+
+        assertArrayEquals(dynamicBytes3, antBytes3);
+
+        TestFlagDynamicMessage2 dynamicMessage4 = new TestFlagDynamicMessage2();
+
+        dynamicMessage4.flag0 = true;
+        dynamicMessage4.flag1 = true;
+        dynamicMessage4.flag2 = true;
+        dynamicMessage4.byte0 = 1;
+        dynamicMessage4.byte1 = 2;
+        dynamicMessage4.byte2 = 3;
+
+        byte[] antBytes4 = impl.toAntBytes(dynamicMessage4, 8);
+
+        assertArrayEquals(dynamicBytes1, antBytes4);
+
+    }
+
 }
