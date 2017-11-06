@@ -66,7 +66,7 @@ public class AntBytesImpl implements AntBytes {
             int moveByte=0;
 
             if (dynamic!=null){
-                if (flags.containsKey(dynamic.value()) && flags.get(dynamic.value())) {
+                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.not()) ) {
                     moveByte = dynamicByte;
                 } else {
                     dynamic = null;
@@ -214,7 +214,7 @@ public class AntBytesImpl implements AntBytes {
             int moveByte = 0;
 
             if (dynamic != null) {
-                if (flags.containsKey(dynamic.value()) && flags.get(dynamic.value())) {
+                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.not()) ) {
                     moveByte = dynamicByte;
                 } else {
                     dynamic = null;

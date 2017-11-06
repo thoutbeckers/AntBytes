@@ -242,7 +242,7 @@ public class AntBytesTest  {
         @S8BIT(1)
         private int byte0;
 
-        @Dynamic(1)
+        @Dynamic(value = 1,not = true)
         @S16BIT(1)
         private int byte1;
 
@@ -290,6 +290,7 @@ public class AntBytesTest  {
     final static byte[] dynamicBytes1 = {(byte)0b00000111, 1,0, 2, 0, 0, 0,3};
     final static byte[] dynamicBytes2 = {(byte)0b00000100, 0,0, 0, 3, 0, 0,0};
     final static byte[] dynamicBytes3 = {(byte)0b00000111, 1,2, 0, 3, 0, 0,0};
+    final static byte[] dynamicBytes4 = {(byte)0b00000101, 1,0, 2, 0, 0, 0,3};
 
 
 
@@ -657,10 +658,10 @@ public class AntBytesTest  {
 
 
 
-        TestFlagDynamicMessage2 message3 = impl.instanceFromAntBytes(TestFlagDynamicMessage2.class, dynamicBytes1);
+        TestFlagDynamicMessage2 message3 = impl.instanceFromAntBytes(TestFlagDynamicMessage2.class, dynamicBytes4);
 
         assertEquals(true, message3.flag0);
-        assertEquals(true ,message3.flag1);
+        assertEquals(false ,message3.flag1);
         assertEquals(true, message3.flag2);
         assertEquals(1,message3.byte0);
         assertEquals(2,message3.byte1);
@@ -724,7 +725,7 @@ public class AntBytesTest  {
         TestFlagDynamicMessage2 dynamicMessage4 = new TestFlagDynamicMessage2();
 
         dynamicMessage4.flag0 = true;
-        dynamicMessage4.flag1 = true;
+        dynamicMessage4.flag1 = false;
         dynamicMessage4.flag2 = true;
         dynamicMessage4.byte0 = 1;
         dynamicMessage4.byte1 = 2;
@@ -732,7 +733,7 @@ public class AntBytesTest  {
 
         byte[] antBytes4 = impl.toAntBytes(dynamicMessage4, 8);
 
-        assertArrayEquals(dynamicBytes1, antBytes4);
+        assertArrayEquals(dynamicBytes4, antBytes4);
 
     }
 

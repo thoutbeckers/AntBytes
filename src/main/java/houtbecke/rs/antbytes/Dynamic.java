@@ -11,4 +11,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 public @interface Dynamic {
     int value() default 0;
     int startByte() default 0;
+    boolean not() default false;
+
 }
