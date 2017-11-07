@@ -4,6 +4,9 @@ import houtbecke.rs.antbytes.AntBytes;
 import houtbecke.rs.antbytes.AntBytesUtil;
 import houtbecke.rs.antbytes.Dynamic;
 import houtbecke.rs.antbytes.Flag;
+import houtbecke.rs.antbytes.LSBS16BIT;
+import houtbecke.rs.antbytes.LSBS24BIT;
+import houtbecke.rs.antbytes.LSBS32BIT;
 import houtbecke.rs.antbytes.LSBU16BIT;
 import houtbecke.rs.antbytes.LSBU24BIT;
 import houtbecke.rs.antbytes.LSBU32BIT;
@@ -301,6 +304,26 @@ public class AntBytesTest  {
 
     }
 
+
+    public static class TestLSBSMessage {
+        public TestLSBSMessage() {}
+
+        @Page(123)
+        private int page = 123;
+
+        @LSBS16BIT(1)
+        protected int one;
+
+        @LSBS32BIT(3)
+        public long three;
+
+        @LSBS24BIT(7)
+        protected int seven;
+
+    }
+
+
+
     AntBytes impl = AntBytesUtil.getInstance();
 
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
@@ -317,6 +340,7 @@ public class AntBytesTest  {
     final static byte[] dynamicBytes24 = {(byte)0b00000011, 0,0, 1, 2, 0, 0,0};
     final static byte[] dynamicBytes24False = {0, 0,0, 0, 0, 0, 0,0};
 
+    final static byte[] lowLSBSBytes = {123, -1, -1, -3, -1, -1, -1,-7,-1,-1};
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
     final static byte[] requiredOneBytes = {4, 1, 0, 2, 0, 0, 0, 4};
@@ -449,7 +473,30 @@ public class AntBytesTest  {
 
     }
 
+
+
     @Test
+    public void toBytesSignedLSB() {
+        TestLSBSMessage message = new TestLSBSMessage();
+        message.one = -1;
+        message.three = -3;
+        message.seven = -7;
+        byte[] antBytes = impl.toAntBytes(message,10);
+
+
+        assertArrayEquals(lowLSBSBytes,antBytes);
+    }
+
+    @Test
+    public void fromBytesSignedLSB() {
+        TestLSBSMessage message = impl.instanceFromAntBytes(TestLSBSMessage.class,lowLSBSBytes);
+        assertEquals(-1,message.one );
+        assertEquals(-3,message.three );
+        assertEquals(-7,message.seven );
+    }
+
+
+        @Test
     public void toBytesSignedHigh() {
 
         TestSignedAntMessage highTest = new TestSignedAntMessage();

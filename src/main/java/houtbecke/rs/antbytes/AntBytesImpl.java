@@ -29,10 +29,12 @@ public class AntBytesImpl implements AntBytes {
         @Override
         public int compareTo(Object o) {
             if (o instanceof SortedField ){
+                if (o == this) return 0;
                 SortedField otherField = (SortedField)o;
                 if (otherField.flag && !this.flag) return 1;
+                if (!otherField.flag && this.flag) return -1;
                 if (otherField.dynamic && !this.dynamic) return 1;
-                if (otherField.dynamic && this.dynamic ){
+                if ((otherField.dynamic && this.dynamic) || (otherField.flag && this.flag)){
                     if (otherField.order > this.order) return -1;
                     if (otherField.order == this.order) throw new RuntimeException("order has to be unique");
                     if (otherField.order < this.order) return 1;
@@ -83,6 +85,8 @@ public class AntBytesImpl implements AntBytes {
             int order = 0;
             if (hasDynamic)
                 order = dynamic.order();
+            else if (hasFlag)
+                    order =flag.value() + flag.startByte()*8;
             sortedSet.add(new SortedField(f, hasFlag, hasDynamic, order));
         }
         return  sortedSet;
@@ -164,6 +168,21 @@ public class AntBytesImpl implements AntBytes {
                     } else if (type == LSBU32BIT.class) {
                         LSBU32BIT lsbu32bit = (LSBU32BIT) anon;
                         BitBytes.outputLSB(output, lsbu32bit.value() + moveByte, lsbu32bit.startBit(), getLongFromField(f, o), 32);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 4;
+                    } else if (type == LSBS16BIT.class) {
+                        LSBS16BIT lsbs16bit = (LSBS16BIT) anon;
+                        BitBytes.outputLSB(output, lsbs16bit.value() + moveByte, lsbs16bit.startBit(), getLongFromField(f, o), 16);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 2;
+                    } else if (type == LSBS24BIT.class) {
+                        LSBS24BIT lsbs24bit = (LSBS24BIT) anon;
+                        BitBytes.outputLSB(output, lsbs24bit.value() + moveByte, lsbs24bit.startBit(), getLongFromField(f, o), 24);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 3;
+                    } else if (type == LSBS32BIT.class) {
+                        LSBS32BIT lsbs32bit = (LSBS32BIT) anon;
+                        BitBytes.outputLSB(output, lsbs32bit.value() + moveByte, lsbs32bit.startBit(), getLongFromField(f, o), 32);
                         if (dynamic!=null)
                             dynamicByte= dynamicByte + 4;
                     } else if (type == LSBUXBIT.class) {
@@ -257,8 +276,10 @@ public class AntBytesImpl implements AntBytes {
         final HashMap<Integer,Boolean> flags = new HashMap<>();
         int dynamicByte = 0;
 
-        for (SortedField sortedField: sortFields(object.getClass().getDeclaredFields())) {
+        SortedSet<SortedField> fields = sortFields(object.getClass().getDeclaredFields());
+        for (SortedField sortedField:fields ) {
             final Field f =sortedField.field;
+
             for (Annotation anon : f.getAnnotations()) {
                 Class type = anon.annotationType();
                 if (type == Flag.class) {
@@ -274,6 +295,8 @@ public class AntBytesImpl implements AntBytes {
 
             Dynamic dynamic = f.getAnnotation(Dynamic.class);
             int moveByte = 0;
+
+
 
             if (dynamic != null) {
                 if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.inverse()) ) {
@@ -323,6 +346,21 @@ public class AntBytesImpl implements AntBytes {
                 } else if (type == LSBUXBIT.class) {
                     LSBUXBIT uxbit = (LSBUXBIT) anon;
                     setLongOnField(f, object, BitBytes.inputLSB(antBytes, uxbit.value()+ moveByte, uxbit.startBit(), uxbit.bitLength()));
+                }else if (type == LSBS16BIT.class) {
+                    LSBS16BIT lsbs16bit = (LSBS16BIT) anon;
+                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbs16bit.value() + moveByte, lsbs16bit.startBit(), 16,true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 2;
+                } else if (type == LSBS24BIT.class) {
+                    LSBS24BIT lsbs24bit = (LSBS24BIT) anon;
+                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbs24bit.value() + moveByte, lsbs24bit.startBit(), 24,true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 3;
+                } else if (type == LSBS32BIT.class) {
+                    LSBS32BIT u32bit = (LSBS32BIT) anon;
+                    setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value() + moveByte, u32bit.startBit(), 32,true));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 4;
                 } else if (type == UXBIT.class) {
                     UXBIT uxbit = (UXBIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()));
