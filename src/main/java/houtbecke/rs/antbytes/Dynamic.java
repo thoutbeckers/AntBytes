@@ -9,8 +9,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target({ ElementType.FIELD})
 public @interface Dynamic {
-    int value() default 0;
+    int value();
+    int order();
     int startByte() default 0;
-    boolean not() default false;
+    boolean inverse() default false;
 
 }

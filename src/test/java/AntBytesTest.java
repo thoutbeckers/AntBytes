@@ -214,17 +214,19 @@ public class AntBytesTest  {
         @Flag(2)
         private boolean flag2;
 
-        @Dynamic(0)
+        @Dynamic(value = 0,order = 0)
         @U8BIT(1)
         private int byte0;
 
-        @Dynamic(1)
-        @U16BIT(1)
-        private int byte1;
-
-        @Dynamic(2)
+        @Dynamic(value = 2,order = 2)
         @U32BIT(1)
         private int byte2;
+
+        @Dynamic(value = 1,order = 1)
+        @U16BIT(1)
+        private int abyte1;
+
+
     }
 
 
@@ -240,15 +242,15 @@ public class AntBytesTest  {
         @Flag(2)
         private boolean flag2;
 
-        @Dynamic(0)
+        @Dynamic(value = 0,order = 0)
         @S8BIT(1)
         private int byte0;
 
-        @Dynamic(value = 1,not = true)
+        @Dynamic(value = 1,order = 1,inverse = true)
         @S16BIT(1)
         private int byte1;
 
-        @Dynamic(2)
+        @Dynamic(value = 2,order = 2)
         @S32BIT(1)
         private int byte2;
     }
@@ -265,15 +267,15 @@ public class AntBytesTest  {
         @Flag(2)
         private boolean flag2;
 
-        @Dynamic(0)
+        @Dynamic(value = 0,order = 0)
         @S8BIT(1)
         private int byte0;
 
-        @Dynamic(1)
+        @Dynamic(value = 1,order = 1)
         @LSBU16BIT(1)
         private int byte1;
 
-        @Dynamic(2)
+        @Dynamic(value = 2,order = 2)
         @LSBU32BIT(1)
         private int byte2;
     }
@@ -288,11 +290,11 @@ public class AntBytesTest  {
         private boolean flag1;
 
 
-        @Dynamic(0)
+        @Dynamic(value = 0,order = 0)
         @U24BIT(1)
         private int byte0;
 
-        @Dynamic(0)
+        @Dynamic(value = 1,order = 1)
         @LSBU24BIT(1)
         private int byte1;
 
@@ -666,7 +668,7 @@ public class AntBytesTest  {
         assertEquals(true ,message.flag1);
         assertEquals(true, message.flag2);
         assertEquals(1,message.byte0);
-        assertEquals(2,message.byte1);
+        assertEquals(2,message.abyte1);
         assertEquals(3,message.byte2);
 
         TestFlagDynamicMessage message2 = impl.instanceFromAntBytes(TestFlagDynamicMessage.class, dynamicBytes2);
@@ -675,7 +677,7 @@ public class AntBytesTest  {
         assertEquals(false ,message2.flag1);
         assertEquals(true, message2.flag2);
         assertEquals(0,message2.byte0);
-        assertEquals(0,message2.byte1);
+        assertEquals(0,message2.abyte1);
         assertEquals(3,message2.byte2);
 
 
@@ -725,7 +727,7 @@ public class AntBytesTest  {
         dynamicMessage1.flag1 = true;
         dynamicMessage1.flag2 = true;
         dynamicMessage1.byte0 = 1;
-        dynamicMessage1.byte1 = 2;
+        dynamicMessage1.abyte1 = 2;
         dynamicMessage1.byte2 = 3;
 
         byte[] antBytes1 = impl.toAntBytes(dynamicMessage1, 8);
@@ -738,7 +740,7 @@ public class AntBytesTest  {
         dynamicMessage2.flag1 = false;
         dynamicMessage2.flag2 = true;
         dynamicMessage2.byte0 = 0;
-        dynamicMessage2.byte1 = 0;
+        dynamicMessage2.abyte1 = 0;
         dynamicMessage2.byte2 = 3;
 
         byte[] antBytes2 = impl.toAntBytes(dynamicMessage2, 8);

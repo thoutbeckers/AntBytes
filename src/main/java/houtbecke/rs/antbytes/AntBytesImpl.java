@@ -6,9 +6,43 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class AntBytesImpl implements AntBytes {
 
+    class SortedField implements Comparable{
+
+        SortedField(Field field,boolean flag, boolean dynamic, int order){
+            this.field = field;
+            this.order = order;
+            this.flag = flag;
+            this.dynamic = dynamic;
+        }
+
+        Field field;
+        boolean flag;
+        boolean dynamic;
+
+        int order;
+
+        @Override
+        public int compareTo(Object o) {
+            if (o instanceof SortedField ){
+                SortedField otherField = (SortedField)o;
+                if (otherField.flag && !this.flag) return 1;
+                if (otherField.dynamic && !this.dynamic) return 1;
+                if (otherField.dynamic && this.dynamic ){
+                    if (otherField.order > this.order) return -1;
+                    if (otherField.order == this.order) throw new RuntimeException("order has to be unique");
+                    if (otherField.order < this.order) return 1;
+
+                }
+            }
+
+            return -1;
+        }
+    }
 
 
     protected long getLongFromField(Field f, Object o) throws IllegalAccessException {
@@ -38,15 +72,31 @@ public class AntBytesImpl implements AntBytes {
         return toAntBytes(o,8);
     }
 
+
+    SortedSet<SortedField> sortFields(Field[] fields){
+        SortedSet<SortedField> sortedSet = new TreeSet<>();
+        for (Field f: fields) {
+            Dynamic dynamic = f.getAnnotation(Dynamic.class);
+            Flag flag = f.getAnnotation(Flag.class);
+            boolean hasFlag = (flag != null);
+            boolean hasDynamic = (dynamic != null);
+            int order = 0;
+            if (hasDynamic)
+                order = dynamic.order();
+            sortedSet.add(new SortedField(f, hasFlag, hasDynamic, order));
+        }
+        return  sortedSet;
+    }
+
     @Override
     public <T> byte[] toAntBytes(T o, int size) {
         byte[] output = new byte[size];
-        int dynamicByte =0;
+        int dynamicByte = 0;
+
         HashMap<Integer,Boolean> flags = new HashMap<>();
 
-
-
-        for (Field f: o.getClass().getDeclaredFields()) {
+        for (SortedField sortedField: sortFields(o.getClass().getDeclaredFields())) {
+            final Field f =sortedField.field;
             for (Annotation anon : f.getAnnotations()){
                 try {
                     Class type = anon.annotationType();
@@ -66,10 +116,10 @@ public class AntBytesImpl implements AntBytes {
             int moveByte=0;
 
             if (dynamic!=null){
-                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.not()) ) {
+                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.inverse()) ) {
                     moveByte = dynamicByte;
                 } else {
-                    dynamic = null;
+                    continue;
                 }
             }
 
@@ -206,37 +256,38 @@ public class AntBytesImpl implements AntBytes {
     public <T>T fromAntBytes(T object, byte[] antBytes) {
         final HashMap<Integer,Boolean> flags = new HashMap<>();
         int dynamicByte = 0;
-        for (Field f: object.getClass().getDeclaredFields()){
+
+        for (SortedField sortedField: sortFields(object.getClass().getDeclaredFields())) {
+            final Field f =sortedField.field;
             for (Annotation anon : f.getAnnotations()) {
-                    Class type = anon.annotationType();
-                    if (type == Flag.class) {
-                        Flag flag = (Flag) anon;
-                        int positionInByte = 7 - (flag.value() % 8);
-                        int byteNr = flag.startByte() + (flag.value() / 8);
-                        boolean flagValue =BitBytes.input(antBytes, byteNr, positionInByte, 1)==1;
-                        setBooleanOnField(f, object,flagValue);
-                        if (flag.startByte() == 0)
-                            flags.put(flag.value(), flagValue);
-                        }
+                Class type = anon.annotationType();
+                if (type == Flag.class) {
+                    Flag flag = (Flag) anon;
+                    int positionInByte = 7 - (flag.value() % 8);
+                    int byteNr = flag.startByte() + (flag.value() / 8);
+                    boolean flagValue = BitBytes.input(antBytes, byteNr, positionInByte, 1) == 1;
+                    setBooleanOnField(f, object, flagValue);
+                    if (flag.startByte() == 0)
+                        flags.put(flag.value(), flagValue);
+                }
             }
 
             Dynamic dynamic = f.getAnnotation(Dynamic.class);
             int moveByte = 0;
 
             if (dynamic != null) {
-                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.not()) ) {
+                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.inverse()) ) {
                     moveByte = dynamicByte;
                 } else {
-                    dynamic = null;
+                    continue;
                 }
             }
-
 
             for (Annotation anon : f.getAnnotations()) {
                 Class type = anon.annotationType();
                 if (type == U8BIT.class) {
                     U8BIT u8bit = (U8BIT) anon;
-                    setIntOnField(f, object, BitBytes.input(antBytes, u8bit.value() + moveByte, u8bit.startBit(), 8));
+                        setIntOnField(f, object, BitBytes.input(antBytes, u8bit.value() + moveByte, u8bit.startBit(), 8));
                     if (dynamic!=null)
                         dynamicByte= dynamicByte + 1;
                 } else if (type == U16BIT.class) {
