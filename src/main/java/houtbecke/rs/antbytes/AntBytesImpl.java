@@ -91,6 +91,11 @@ public class AntBytesImpl implements AntBytes {
                         BitBytes.output(output, u16bit.value() + moveByte, u16bit.startBit(), getLongFromField(f, o), 16);
                         if (dynamic!=null)
                             dynamicByte= dynamicByte + 2;
+                    } else if (type == U24BIT.class) {
+                        U24BIT u24bit = (U24BIT) anon;
+                        BitBytes.output(output, u24bit.value() + moveByte, u24bit.startBit(), getLongFromField(f, o), 24);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 3;
                     } else if (type == U32BIT.class) {
                         U32BIT u32bit = (U32BIT) anon;
                         BitBytes.output(output, u32bit.value() + moveByte, u32bit.startBit(), getLongFromField(f, o), 32);
@@ -101,6 +106,11 @@ public class AntBytesImpl implements AntBytes {
                         BitBytes.outputLSB(output, lsbu16bit.value() + moveByte, lsbu16bit.startBit(), getLongFromField(f, o), 16);
                         if (dynamic!=null)
                             dynamicByte= dynamicByte + 2;
+                    } else if (type == LSBU24BIT.class) {
+                        LSBU24BIT lsbu24bit = (LSBU24BIT) anon;
+                        BitBytes.outputLSB(output, lsbu24bit.value() + moveByte, lsbu24bit.startBit(), getLongFromField(f, o), 24);
+                        if (dynamic!=null)
+                            dynamicByte= dynamicByte + 3;
                     } else if (type == LSBU32BIT.class) {
                         LSBU32BIT lsbu32bit = (LSBU32BIT) anon;
                         BitBytes.outputLSB(output, lsbu32bit.value() + moveByte, lsbu32bit.startBit(), getLongFromField(f, o), 32);
@@ -234,6 +244,11 @@ public class AntBytesImpl implements AntBytes {
                     setIntOnField(f, object, BitBytes.input(antBytes, u16bit.value() + moveByte, u16bit.startBit(), 16));
                     if (dynamic!=null)
                         dynamicByte= dynamicByte + 2;
+                }  else if (type == U24BIT.class) {
+                    U24BIT u24bit = (U24BIT) anon;
+                    setIntOnField(f, object, BitBytes.input(antBytes, u24bit.value() + moveByte, u24bit.startBit(), 24));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 3;
                 } else if (type == U32BIT.class) {
                     U32BIT u32bit = (U32BIT) anon;
                     setLongOnField(f, object, BitBytes.input(antBytes, u32bit.value() + moveByte, u32bit.startBit(), 32));
@@ -244,6 +259,11 @@ public class AntBytesImpl implements AntBytes {
                     setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbu16bit.value() + moveByte, lsbu16bit.startBit(), 16));
                     if (dynamic!=null)
                         dynamicByte= dynamicByte + 2;
+                } else if (type == LSBU24BIT.class) {
+                    LSBU24BIT lsbu24bit = (LSBU24BIT) anon;
+                    setIntOnField(f, object, BitBytes.inputLSB(antBytes, lsbu24bit.value() + moveByte, lsbu24bit.startBit(), 24));
+                    if (dynamic!=null)
+                        dynamicByte= dynamicByte + 3;
                 } else if (type == LSBU32BIT.class) {
                     LSBU32BIT u32bit = (LSBU32BIT) anon;
                     setLongOnField(f, object, BitBytes.inputLSB(antBytes, u32bit.value() + moveByte, u32bit.startBit(), 32));

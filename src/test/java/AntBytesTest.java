@@ -5,6 +5,7 @@ import houtbecke.rs.antbytes.AntBytesUtil;
 import houtbecke.rs.antbytes.Dynamic;
 import houtbecke.rs.antbytes.Flag;
 import houtbecke.rs.antbytes.LSBU16BIT;
+import houtbecke.rs.antbytes.LSBU24BIT;
 import houtbecke.rs.antbytes.LSBU32BIT;
 import houtbecke.rs.antbytes.LSBUXBIT;
 import houtbecke.rs.antbytes.Page;
@@ -14,6 +15,7 @@ import houtbecke.rs.antbytes.S32BIT;
 import houtbecke.rs.antbytes.S8BIT;
 import houtbecke.rs.antbytes.SXBIT;
 import houtbecke.rs.antbytes.U16BIT;
+import houtbecke.rs.antbytes.U24BIT;
 import houtbecke.rs.antbytes.U32BIT;
 import houtbecke.rs.antbytes.U8BIT;
 import houtbecke.rs.antbytes.UXBIT;
@@ -276,7 +278,26 @@ public class AntBytesTest  {
         private int byte2;
     }
 
+    public static class TestFlagDynamicMessage24 {
+        public TestFlagDynamicMessage24() {}
 
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+
+        @Dynamic(0)
+        @U24BIT(1)
+        private int byte0;
+
+        @Dynamic(0)
+        @LSBU24BIT(1)
+        private int byte1;
+
+
+    }
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -291,7 +312,8 @@ public class AntBytesTest  {
     final static byte[] dynamicBytes2 = {(byte)0b00000100, 0,0, 0, 3, 0, 0,0};
     final static byte[] dynamicBytes3 = {(byte)0b00000111, 1,2, 0, 3, 0, 0,0};
     final static byte[] dynamicBytes4 = {(byte)0b00000101, 1,0, 2, 0, 0, 0,3};
-
+    final static byte[] dynamicBytes24 = {(byte)0b00000011, 0,0, 1, 2, 0, 0,0};
+    final static byte[] dynamicBytes24False = {0, 0,0, 0, 0, 0, 0,0};
 
 
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -677,6 +699,21 @@ public class AntBytesTest  {
         assertEquals(2,message4.byte1);
         assertEquals(3,message4.byte2);
 
+
+        TestFlagDynamicMessage24 message5 = impl.instanceFromAntBytes(TestFlagDynamicMessage24.class, dynamicBytes24);
+        assertEquals(true, message5.flag0);
+        assertEquals(true ,message5.flag1);
+        assertEquals(1,message5.byte0);
+        assertEquals(2,message5.byte1);
+
+
+        TestFlagDynamicMessage24 message6 = impl.instanceFromAntBytes(TestFlagDynamicMessage24.class, dynamicBytes24False);
+        assertEquals(false, message6.flag0);
+        assertEquals(false ,message6.flag1);
+        assertEquals(0,message6.byte0);
+        assertEquals(0,message6.byte1);
+
+
     }
 
     @Test
@@ -734,6 +771,27 @@ public class AntBytesTest  {
         byte[] antBytes4 = impl.toAntBytes(dynamicMessage4, 8);
 
         assertArrayEquals(dynamicBytes4, antBytes4);
+
+
+        TestFlagDynamicMessage24 dynamicMessage24 = new TestFlagDynamicMessage24();
+        dynamicMessage24.flag0 = true;
+        dynamicMessage24.flag1 = true;
+        dynamicMessage24.byte0 = 1;
+        dynamicMessage24.byte1 = 2;
+
+        byte[] antBytes24 = impl.toAntBytes(dynamicMessage24, 8);
+        assertArrayEquals(dynamicBytes24, antBytes24);
+
+
+        TestFlagDynamicMessage24 dynamicMessage24False = new TestFlagDynamicMessage24();
+        dynamicMessage24False.flag0 = false;
+        dynamicMessage24False.flag1 = false;
+        dynamicMessage24False.byte0 = 0;
+        dynamicMessage24False.byte1 = 0;
+
+        byte[] antBytes24false = impl.toAntBytes(dynamicMessage24False, 8);
+        assertArrayEquals(dynamicBytes24False, antBytes24false);
+
 
     }
 
