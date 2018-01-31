@@ -305,6 +305,39 @@ public class AntBytesTest  {
     }
 
 
+    public static class TestFlagDynamicMessageSigned {
+        public TestFlagDynamicMessageSigned() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Flag(1)
+        private boolean flag1;
+
+
+        @Dynamic(value = 0,order = 0)
+        @LSBS16BIT(1)
+        private int byte0;
+
+        @Dynamic(value = 1,order = 1)
+        @LSBS24BIT(1)
+        private int byte1;
+    }
+
+    public static class TestFlagDynamicMessageSigned2 {
+        public TestFlagDynamicMessageSigned2() {}
+
+        @Flag(0)
+        private boolean flag0;
+
+        @Dynamic(value = 0,order = 0)
+        @LSBS32BIT(1)
+        private int byte0;
+
+    }
+
+
+
     public static class TestLSBSMessage {
         public TestLSBSMessage() {}
 
@@ -339,6 +372,8 @@ public class AntBytesTest  {
     final static byte[] dynamicBytes4 = {(byte)0b00000101, 1,0, 2, 0, 0, 0,3};
     final static byte[] dynamicBytes24 = {(byte)0b00000011, 0,0, 1, 2, 0, 0,0};
     final static byte[] dynamicBytes24False = {0, 0,0, 0, 0, 0, 0,0};
+    final static byte[] dynamicSignedBytes = {(byte)0b00000011, 1,0, 2, 0, 0, 0,0};
+    final static byte[] dynamicSignedBytes2 = {(byte)0b0000001, 1,0, 0,0, 0, 0,0};
 
     final static byte[] lowLSBSBytes = {123, -1, -1, -3, -1, -1, -1,-7,-1,-1};
 
@@ -763,6 +798,20 @@ public class AntBytesTest  {
         assertEquals(0,message6.byte1);
 
 
+        TestFlagDynamicMessageSigned message7 = impl.instanceFromAntBytes(TestFlagDynamicMessageSigned.class, dynamicSignedBytes);
+        assertEquals(true, message7.flag0);
+        assertEquals(true ,message7.flag1);
+        assertEquals(1,message7.byte0);
+        assertEquals(2,message7.byte1);
+
+
+        TestFlagDynamicMessageSigned2 message8 = impl.instanceFromAntBytes(TestFlagDynamicMessageSigned2.class, dynamicSignedBytes2);
+        assertEquals(true, message8.flag0);
+        assertEquals(1,message8.byte0);
+
+
+
+
     }
 
     @Test
@@ -841,7 +890,20 @@ public class AntBytesTest  {
         byte[] antBytes24false = impl.toAntBytes(dynamicMessage24False, 8);
         assertArrayEquals(dynamicBytes24False, antBytes24false);
 
+        TestFlagDynamicMessageSigned dynamicMessageSigned= new TestFlagDynamicMessageSigned();
+        dynamicMessageSigned.flag0 = true;
+        dynamicMessageSigned.flag1 = true;
+        dynamicMessageSigned.byte0 = 1;
+        dynamicMessageSigned.byte1 = 2;
+        byte[] antBytesSigned = impl.toAntBytes(dynamicMessageSigned, 8);
+        assertArrayEquals(dynamicSignedBytes, antBytesSigned);
 
+
+        TestFlagDynamicMessageSigned2 dynamicMessageSigned2 = new TestFlagDynamicMessageSigned2();
+        dynamicMessageSigned2.flag0 = true;
+        dynamicMessageSigned2.byte0 = 1;
+        byte[] antBytesSigned2 = impl.toAntBytes(dynamicMessageSigned2, 8);
+        assertArrayEquals(dynamicSignedBytes2, antBytesSigned2);
     }
 
 }
