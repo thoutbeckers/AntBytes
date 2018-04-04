@@ -262,7 +262,9 @@ public class AntBytesImpl implements AntBytes {
     public <T>T instanceFromAntBytes(Class<? extends T> clazz, byte[] antBytes) {
         try {
             T result = clazz.newInstance();
-            return fromAntBytes(result, antBytes);
+            fromAntBytes(result, clazz, antBytes);
+
+            return result;
         } catch (InstantiationException e) {
             return null;
         } catch (IllegalAccessException e) {
@@ -273,10 +275,122 @@ public class AntBytesImpl implements AntBytes {
 
     @Override
     public <T>T fromAntBytes(T object, byte[] antBytes) {
+        fromAntBytes(object, object.getClass(), antBytes);
+
+        return object;
+    }
+
+    Map<Integer, Object> mapping = Collections.synchronizedMap(new HashMap<Integer, Object>());
+
+
+
+    protected int findPage(Class clazz) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Page.class)) {
+                Page page = f.getAnnotation(Page.class);
+                return page.value();
+            }
+        }
+        return -1;
+    }
+
+
+    protected boolean hasRequired(Class clazz) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Required.class)) {
+               return true;
+
+            }
+        }
+        return false;
+    }
+
+    public  boolean hasAllRequired(Class clazz, byte[] antBytes) {
+        for (Field f: clazz.getDeclaredFields()) {
+            if (!f.isAnnotationPresent(Required.class))  continue;
+
+            Required required = f.getAnnotation(Required.class);
+
+            for (Annotation anon : f.getAnnotations()) {
+                Class type = anon.annotationType();
+                if (type == U8BIT.class) {
+                    U8BIT u8bit = (U8BIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8))
+                        return false;
+
+                } else if (type == U16BIT.class) {
+                    U16BIT u16bit = (U16BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16))
+                        return false;
+
+                } else if (type == U32BIT.class) {
+                    U32BIT u32bit = (U32BIT) anon;
+                    if ( required.value() !=BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32))
+                        return false;
+
+                } else if (type == UXBIT.class) {
+                    UXBIT uxbit = (UXBIT) anon;
+                    if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
+                        return false;
+                }
+            }
+
+
+
+        }
+        return true;
+    }
+
+
+
+    @Override
+    public void register(Class clazz) {
+        int page = findPage(clazz);
+        if (page == -1)
+            return;
+        if(!hasRequired(clazz)){
+            mapping.put(page, clazz);
+        }else{
+            ArrayList<Class> subpages;
+          if (mapping.containsKey(page) && (mapping.get(page) instanceof ArrayList))
+            {
+                subpages =  (ArrayList<Class>)mapping.get(page);
+            }else{
+                subpages = new ArrayList<Class>();
+            }
+            subpages.add(clazz);
+            mapping.put(page, subpages);
+
+        }
+
+    }
+
+    @Override
+    public Object fromAntBytes(byte[] antBytes) {
+        int page = antBytes[0] & 0xFF;
+       Object o = mapping.get(page);
+        Class clazz = null;
+        if (o instanceof ArrayList){
+            ArrayList<Class> subpages =   (ArrayList<Class>) o;
+            for(Class c : subpages){
+                if (hasAllRequired(c,antBytes))
+                    return instanceFromAntBytes(c, antBytes);
+            }
+
+        }else{
+            clazz = (Class) mapping.get(page);
+        }
+
+        if (clazz == null)
+            return null;
+        return instanceFromAntBytes(clazz, antBytes);
+    }
+
+    private <T> void fromAntBytes(final T object, final Class<? extends T> clazz, final byte[] antBytes) {
         final HashMap<Integer,Boolean> flags = new HashMap<>();
         int dynamicByte = 0;
 
-        SortedSet<SortedField> fields = sortFields(object.getClass().getDeclaredFields());
+        SortedSet<SortedField> fields = sortFields(clazz.getDeclaredFields());
         for (SortedField sortedField:fields ) {
             final Field f =sortedField.field;
 
@@ -387,112 +501,6 @@ public class AntBytesImpl implements AntBytes {
                 }
             }
         }
-        return object;
     }
 
-    Map<Integer, Object> mapping = Collections.synchronizedMap(new HashMap<Integer, Object>());
-
-
-
-    protected int findPage(Class clazz) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (f.isAnnotationPresent(Page.class)) {
-                Page page = f.getAnnotation(Page.class);
-                return page.value();
-            }
-        }
-        return -1;
-    }
-
-
-    protected boolean hasRequired(Class clazz) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (f.isAnnotationPresent(Required.class)) {
-               return true;
-
-            }
-        }
-        return false;
-    }
-
-    public  boolean hasAllRequired(Class clazz, byte[] antBytes) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (!f.isAnnotationPresent(Required.class))  continue;
-
-            Required required = f.getAnnotation(Required.class);
-
-            for (Annotation anon : f.getAnnotations()) {
-                Class type = anon.annotationType();
-                if (type == U8BIT.class) {
-                    U8BIT u8bit = (U8BIT) anon;
-                    if ( required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8))
-                        return false;
-
-                } else if (type == U16BIT.class) {
-                    U16BIT u16bit = (U16BIT) anon;
-                    if ( required.value() !=BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16))
-                        return false;
-
-                } else if (type == U32BIT.class) {
-                    U32BIT u32bit = (U32BIT) anon;
-                    if ( required.value() !=BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32))
-                        return false;
-
-                } else if (type == UXBIT.class) {
-                    UXBIT uxbit = (UXBIT) anon;
-                    if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
-                        return false;
-                }
-            }
-
-
-
-        }
-        return true;
-    }
-
-
-
-    @Override
-    public void register(Class clazz) {
-        int page = findPage(clazz);
-        if (page == -1)
-            return;
-        if(!hasRequired(clazz)){
-            mapping.put(page, clazz);
-        }else{
-            ArrayList<Class> subpages;
-          if (mapping.containsKey(page) && (mapping.get(page) instanceof ArrayList))
-            {
-                subpages =  (ArrayList<Class>)mapping.get(page);
-            }else{
-                subpages = new ArrayList<Class>();
-            }
-            subpages.add(clazz);
-            mapping.put(page, subpages);
-
-        }
-
-    }
-
-    @Override
-    public Object fromAntBytes(byte[] antBytes) {
-        int page = antBytes[0] & 0xFF;
-       Object o = mapping.get(page);
-        Class clazz = null;
-        if (o instanceof ArrayList){
-            ArrayList<Class> subpages =   (ArrayList<Class>) o;
-            for(Class c : subpages){
-                if (hasAllRequired(c,antBytes))
-                    return instanceFromAntBytes(c, antBytes);
-            }
-
-        }else{
-            clazz = (Class) mapping.get(page);
-        }
-
-        if (clazz == null)
-            return null;
-        return instanceFromAntBytes(clazz, antBytes);
-    }
 }
