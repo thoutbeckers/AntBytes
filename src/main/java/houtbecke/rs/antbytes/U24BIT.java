@@ -8,10 +8,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention(RUNTIME)
 @Target({ ElementType.FIELD})
-public @interface Dynamic {
-    int value();
-    int order();
-    int startByte() default 0;
-    boolean inverse() default false;
-
+public @interface U24BIT {
+    int value() default 0;
+    int startBit() default 0;
 }
