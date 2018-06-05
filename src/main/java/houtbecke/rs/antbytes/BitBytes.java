@@ -149,12 +149,12 @@ public class BitBytes {
 
 
 
-    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength,boolean signed) {
-        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength, signed);
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitposFromRight, final int bitlength,boolean signed) {
+        return inputLSB(input, bytepos * 8 + relativeBitposFromRight, bitlength, signed);
     }
 
-    public static long inputLSB(byte[] input, int bytepos, int relativeBitpos, final int bitlength) {
-        return inputLSB(input, bytepos * 8 + relativeBitpos, bitlength);
+    public static long inputLSB(byte[] input, int bytepos, int relativeBitposFromRight, final int bitlength) {
+        return inputLSB(input, bytepos * 8 + relativeBitposFromRight, bitlength);
     }
 
 
@@ -166,11 +166,13 @@ public class BitBytes {
 
         int byteLength = 1;
         int lastBitLength = 0;
-        int firstBitpos = bitpos % 8;
+        int firstBitposFromRight = bitpos % 8;
 
-        int firstBitLength = 8-firstBitpos;
+        int firstBitLength = 8-firstBitposFromRight;
         firstBitLength = Math.min(firstBitLength,bitlength);
+
         if (firstBitLength==0) firstBitLength=8;
+        int firstBitposFromLeft = 8 - firstBitLength-firstBitposFromRight;
 
         int remainingBitLength = bitlength - firstBitLength;
         if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
@@ -196,27 +198,28 @@ public class BitBytes {
                 msbInput[msbPos] = input[i];
         }
         if (byteLength == 1){
-            return input(msbInput, 0, firstBitpos, bitlength, signed);
+            return input(msbInput, 0, firstBitposFromLeft, bitlength, signed);
         }else {
             return input(msbInput, 0, lastBitPos, bitlength, signed);
         }
     }
 
 
-    public static void outputLSB(byte[] output, int bytepos, int relativeBitpos, long value, int bitlength) {
-        outputLSB(output, bytepos * 8 + relativeBitpos, value, bitlength);
+    public static void outputLSB(byte[] output, int bytepos, int relativeBitposFromRight, long value, int bitlength) {
+        outputLSB(output, bytepos * 8 + relativeBitposFromRight, value, bitlength);
     }
 
     public static void outputLSB(byte[] output, int bitpos, long value, int bitlength) {
                 if (bitlength==0) return;
                 int byteLength = 1;
                 int lastBitLength = 0;
-                int firstBitpos = bitpos % 8;
+                int firstBitposFromRight = bitpos % 8;
 
-                int firstBitLength = 8-firstBitpos;
+                int firstBitLength = 8-firstBitposFromRight;
                 firstBitLength = Math.min(firstBitLength,bitlength);
                 if (firstBitLength==0) firstBitLength=8;
-                int firstBitShift = 8-firstBitLength-firstBitpos;
+                int firstBitposFromLeft = 8 - firstBitLength-firstBitposFromRight;
+
 
                 int remainingBitLength = bitlength - firstBitLength;
                 if (remainingBitLength >0 &&  remainingBitLength % 8 !=0){
@@ -230,7 +233,7 @@ public class BitBytes {
                 int lastBitPos = 8 -lastBitLength;
                 byteLength = byteLength+(remainingBitLength/8);
                 if  (byteLength==1)
-                    lastBitPos =firstBitpos;
+                    lastBitPos = firstBitposFromLeft;
 
 
         byte[]  msbOutput = new byte[byteLength];

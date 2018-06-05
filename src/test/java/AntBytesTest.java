@@ -160,7 +160,7 @@ public class AntBytesTest  {
         @Page(123)
         private int page = 123;
 
-        @LSBUXBIT(value = 1, startBit = 7, bitLength = 1)
+        @LSBUXBIT(value = 1, startBit = 0, bitLength = 1)
         protected int one;
 
         @LSBU16BIT(2)
