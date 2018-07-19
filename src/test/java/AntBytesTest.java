@@ -2,6 +2,7 @@ import org.junit.Test;
 
 import houtbecke.rs.antbytes.AntBytes;
 import houtbecke.rs.antbytes.AntBytesUtil;
+import houtbecke.rs.antbytes.Array;
 import houtbecke.rs.antbytes.Dynamic;
 import houtbecke.rs.antbytes.Flag;
 import houtbecke.rs.antbytes.LSBS16BIT;
@@ -278,6 +279,7 @@ public class AntBytesTest  {
         @LSBU16BIT(1)
         private int byte1;
 
+
         @Dynamic(value = 2,order = 2)
         @LSBU32BIT(1)
         private int byte2;
@@ -354,8 +356,6 @@ public class AntBytesTest  {
         protected int seven;
 
     }
-
-
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -905,5 +905,7 @@ public class AntBytesTest  {
         byte[] antBytesSigned2 = impl.toAntBytes(dynamicMessageSigned2, 8);
         assertArrayEquals(dynamicSignedBytes2, antBytesSigned2);
     }
+
+
 
 }
