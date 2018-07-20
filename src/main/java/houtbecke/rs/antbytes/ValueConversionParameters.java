@@ -2,7 +2,7 @@ package houtbecke.rs.antbytes;
 
 import java.lang.annotation.Annotation;
 
-public class AnnotationParsingParameters {
+public class ValueConversionParameters {
 
     public final int bytePos;
     public final int relativeBitPos;
@@ -10,7 +10,7 @@ public class AnnotationParsingParameters {
     public final boolean signed;
     public final boolean isLSB;
 
-    public AnnotationParsingParameters(Annotation annotation, int byteShift) {
+    public ValueConversionParameters(Annotation annotation, int byteShift) {
 
         Class type = annotation.annotationType();
 
