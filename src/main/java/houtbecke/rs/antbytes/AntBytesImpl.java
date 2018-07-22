@@ -167,7 +167,7 @@ public class AntBytesImpl implements AntBytes {
                     Array arrayAnnotation = f.getAnnotation(Array.class);
 
                     if (arrayAnnotation != null) {
-                        writeArray(output, f, parameters, arrayAnnotation);
+                        writeArray(output, o, f, parameters, arrayAnnotation);
                     } else {
                         writeValueWithConversionParameters(output, parameters, getLongFromField(f, o));
                     }
@@ -179,13 +179,21 @@ public class AntBytesImpl implements AntBytes {
         return output;
     }
 
-    private void writeArray(byte[] output, Field f, ValueConversionParameters parameters, Array arrayAnnotation) {
+    private void writeArray(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
 
-        if (!f.getClass().isArray()) {
-            throw new RuntimeException(String.format("Field %s, marked as an array, is not of an array type", f.getName()));
+        if (!field.getType().isArray()) {
+            throw new RuntimeException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
         }
 
-        int dataLength = java.lang.reflect.Array.getLength(f);
+        int dataLength = 0;
+        Object arrayObject = null;
+        try {
+            arrayObject = field.get(object);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Can't find field '%s' on Object '%s'", field.getName(), object.getClass().getName()));
+        }
+
+        dataLength = java.lang.reflect.Array.getLength(arrayObject);
 
         if (0 == dataLength) {
             return;
@@ -194,7 +202,7 @@ public class AntBytesImpl implements AntBytes {
         int expectedLength = arrayAnnotation.value();
 
 
-        if (expectedLength != dataLength) {
+        if (expectedLength > 0 && expectedLength != dataLength) {
             throw new RuntimeException(String.format("Data length (%d) doesn't match expected length (%d)", dataLength, expectedLength));
         }
 
@@ -205,7 +213,7 @@ public class AntBytesImpl implements AntBytes {
         }
 
         for (int i = 0; i < dataLength; i++) {
-            int value = (int) java.lang.reflect.Array.get(f, i);
+            int value = (int) java.lang.reflect.Array.get(arrayObject, i);
             writeValueWithConversionParameters(output, parameters, value, i * parameters.byteLength);
         }
     }
@@ -216,9 +224,9 @@ public class AntBytesImpl implements AntBytes {
 
     private void writeValueWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
         if (parameters.isLSB) {
-            BitBytes.outputLSB(output, parameters.bytePos, parameters.relativeBitPos, value, 8 * parameters.byteLength);
+            BitBytes.outputLSB(output, parameters.bytePos + byteShift, parameters.relativeBitPos, value, 8 * parameters.byteLength);
         } else {
-            BitBytes.output(output, parameters.bytePos, parameters.relativeBitPos, value, 8 * parameters.byteLength);
+            BitBytes.output(output, parameters.bytePos + byteShift, parameters.relativeBitPos, value, 8 * parameters.byteLength);
         }
     }
 

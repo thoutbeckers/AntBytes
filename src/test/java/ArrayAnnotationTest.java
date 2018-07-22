@@ -11,7 +11,7 @@ public class ArrayAnnotationTest {
 
         @Array
         @U8BIT
-        private int[] arr;
+        public int[] arr;
     }
 
     public static class TestArrayCount {
@@ -63,6 +63,19 @@ public class ArrayAnnotationTest {
         assertEquals(lowBytes[4], atestArrayOnlyr.arr[4]);
         assertEquals(lowBytes[6], atestArrayOnlyr.arr[6]);
         assertEquals(lowBytes[7], atestArrayOnlyr.arr[7]);
+
+    }
+
+    @Test
+    public void testArrayOnly_toBinary() {
+        TestArrayOnly model = new TestArrayOnly();
+        model.arr = new int[]{123, 1, 0, 2, 0, 0, 0, 4};
+        byte[] output = impl.toAntBytes(model);
+        assertEquals(output.length, model.arr.length);
+        assertEquals(output[0], model.arr[0]);
+        assertEquals(output[4], model.arr[4]);
+        assertEquals(output[6], model.arr[6]);
+        assertEquals(output[7], model.arr[7]);
 
     }
 
