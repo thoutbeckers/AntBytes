@@ -167,9 +167,9 @@ public class AntBytesImpl implements AntBytes {
                     Array arrayAnnotation = f.getAnnotation(Array.class);
 
                     if (arrayAnnotation != null) {
-                        writeArray(output, o, f, parameters, arrayAnnotation);
+                        setIntArrayOnField(output, o, f, parameters, arrayAnnotation);
                     } else {
-                        writeValueWithConversionParameters(output, parameters, getLongFromField(f, o));
+                        setIntWithConversionParameters(output, parameters, getLongFromField(f, o));
                     }
 
 
@@ -179,7 +179,7 @@ public class AntBytesImpl implements AntBytes {
         return output;
     }
 
-    private void writeArray(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
+    private void setIntArrayOnField(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
 
         if (!field.getType().isArray()) {
             throw new RuntimeException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
@@ -214,15 +214,15 @@ public class AntBytesImpl implements AntBytes {
 
         for (int i = 0; i < dataLength; i++) {
             int value = (int) java.lang.reflect.Array.get(arrayObject, i);
-            writeValueWithConversionParameters(output, parameters, value, i * parameters.byteLength);
+            setIntWithConversionParameters(output, parameters, value, i * parameters.byteLength);
         }
     }
 
-    private void writeValueWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value) {
-        writeValueWithConversionParameters(output, parameters, value, 0);
+    private void setIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value) {
+        setIntWithConversionParameters(output, parameters, value, 0);
     }
 
-    private void writeValueWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
+    private void setIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
         if (parameters.isLSB) {
             BitBytes.outputLSB(output, parameters.bytePos + byteShift, parameters.relativeBitPos, value, 8 * parameters.byteLength);
         } else {

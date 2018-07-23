@@ -1,5 +1,7 @@
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import houtbecke.rs.antbytes.*;
 
 public class ArrayAnnotationTest {
@@ -7,7 +9,8 @@ public class ArrayAnnotationTest {
     AntBytes impl = AntBytesUtil.getInstance();
 
     public static class TestArrayOnly {
-        public TestArrayOnly() {}
+        public TestArrayOnly() {
+        }
 
         @Array
         @U8BIT
@@ -15,7 +18,8 @@ public class ArrayAnnotationTest {
     }
 
     public static class TestArrayCount {
-        public TestArrayCount() {}
+        public TestArrayCount() {
+        }
 
         @Array(2)
         @S8BIT
@@ -23,21 +27,23 @@ public class ArrayAnnotationTest {
     }
 
     public static class TestEndlessArrayWithOtherData {
-        public TestEndlessArrayWithOtherData() {}
+        public TestEndlessArrayWithOtherData() {
+        }
 
         @Flag(0)
-        private boolean flag0;
+        public boolean flag0;
 
         @U8BIT(1)
-        protected int one;
+        public int one;
 
         @Array
-        @LSBS24BIT(2)
-        private int[] arr;
+        @U24BIT(2)
+        public int[] arr;
     }
 
     public static class TestArrayCountWithOtherData {
-        public TestArrayCountWithOtherData() {}
+        public TestArrayCountWithOtherData() {
+        }
 
         @Flag(0)
         private boolean flag0;
@@ -89,15 +95,30 @@ public class ArrayAnnotationTest {
         assertEquals(highBytes[1], testArrayCount.byte0[1]);
     }
 
+    // {1,1,1} ==  65793
+    // {2,2,2} ==  131586
+
+    final static byte[] array24BitInt = {0b0000_1111, 2, 1, 1, 1, 2, 2, 2};
+
     @Test
     public void testEndlessArrayWithOtherData() {
-        byte[] data = {0b0000_1111,2,1,1,1,2,2,2,3};
-        TestEndlessArrayWithOtherData testArrayCount = impl.instanceFromAntBytes(TestEndlessArrayWithOtherData.class, data);
+        TestEndlessArrayWithOtherData testArrayCount = impl.instanceFromAntBytes(TestEndlessArrayWithOtherData.class, array24BitInt);
         assertEquals(true, testArrayCount.flag0);
-        assertEquals(data[1], testArrayCount.one);
+        assertEquals(array24BitInt[1], testArrayCount.one);
         assertEquals(2, testArrayCount.arr.length);
-        assertEquals(65793, testArrayCount.arr[0]); // {1,1,1} ==  65793
-        assertEquals(131586, testArrayCount.arr[1]); // {2,2,2} ==  131586
+        assertEquals(65793, testArrayCount.arr[0]);
+        assertEquals(131586, testArrayCount.arr[1]);
+    }
+
+    @Test
+    public void testEndlessArrayWithOtherData_toBinary() {
+        TestEndlessArrayWithOtherData testArrayCount = new TestEndlessArrayWithOtherData();
+        testArrayCount.flag0 = true;
+        testArrayCount.arr = new int[]{65793, 131586};
+        testArrayCount.one = array24BitInt[1];
+
+        byte[] output = impl.toAntBytes(testArrayCount);
+        assertEquals(array24BitInt, output);
     }
 
     @Test
