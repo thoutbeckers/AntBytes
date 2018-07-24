@@ -22,7 +22,7 @@ public class ArrayAnnotationTest {
         }
 
         @Array(2)
-        @S8BIT
+        @S8BIT(0)
         public int[] arr;
     }
 
@@ -98,14 +98,13 @@ public class ArrayAnnotationTest {
     // {1,1,1} ==  65793
     // {2,2,2} ==  131586
 
-    final static byte[] array24BitInt = {0b0000_1111, 2, 1, 1, 1, 2, 2, 2};
+    final static byte[] array24BitInt = {1, 2, 1, 1, 1, 2, 2, 2};
 
     @Test
     public void testEndlessArrayWithOtherData() {
         TestEndlessArrayWithOtherData testArrayCount = impl.instanceFromAntBytes(TestEndlessArrayWithOtherData.class, array24BitInt);
         assertEquals(true, testArrayCount.flag0);
         assertEquals(array24BitInt[1], testArrayCount.one);
-        assertEquals(2, testArrayCount.arr.length);
         assertEquals(65793, testArrayCount.arr[0]);
         assertEquals(131586, testArrayCount.arr[1]);
     }
@@ -118,7 +117,7 @@ public class ArrayAnnotationTest {
         testArrayCount.one = array24BitInt[1];
 
         byte[] output = impl.toAntBytes(testArrayCount);
-        assertEquals(array24BitInt, output);
+        assertArrayEquals(array24BitInt, output);
     }
 
     @Test
@@ -129,7 +128,6 @@ public class ArrayAnnotationTest {
 
         assertEquals(data[1], testArrayCount.one);
         assertEquals(data[5], testArrayCount.six);
-        assertEquals(3, testArrayCount.arr.length);
         assertEquals(data[2], testArrayCount.arr[0]);
         assertEquals(data[3], testArrayCount.arr[1]);
         assertEquals(data[4], testArrayCount.arr[2]);
@@ -148,5 +146,13 @@ public class ArrayAnnotationTest {
 
         byte[] output = impl.toAntBytes(testArrayCount);
         assertArrayEquals(testData, output);
+    }
+
+
+
+    @Test(expected = RuntimeException.class)
+    public void inputDataContainsLessItemsThenRequired() {
+        byte[] testData = {1};
+        TestArrayCount testArrayCount = impl.instanceFromAntBytes(TestArrayCount.class, testData);
     }
 }
