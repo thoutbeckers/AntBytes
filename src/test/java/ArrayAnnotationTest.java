@@ -23,7 +23,7 @@ public class ArrayAnnotationTest {
 
         @Array(2)
         @S8BIT
-        private int[] byte0;
+        public int[] arr;
     }
 
     public static class TestEndlessArrayWithOtherData {
@@ -46,17 +46,17 @@ public class ArrayAnnotationTest {
         }
 
         @Flag(0)
-        private boolean flag0;
+        public boolean flag0;
 
         @S8BIT(1)
-        protected int one;
+        public int one;
 
         @Array(3)
         @S8BIT(2)
-        private int[] arr;
+        public int[] arr;
 
         @S8BIT(5)
-        private int six;
+        public int six;
     }
 
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
@@ -90,9 +90,9 @@ public class ArrayAnnotationTest {
     @Test
     public void testArrayCount() {
         TestArrayCount testArrayCount = impl.instanceFromAntBytes(TestArrayCount.class, highBytes);
-        assertEquals(2, testArrayCount.byte0.length);
-        assertEquals(highBytes[0], testArrayCount.byte0[0]);
-        assertEquals(highBytes[1], testArrayCount.byte0[1]);
+        assertEquals(2, testArrayCount.arr.length);
+        assertEquals(highBytes[0], testArrayCount.arr[0]);
+        assertEquals(highBytes[1], testArrayCount.arr[1]);
     }
 
     // {1,1,1} ==  65793
@@ -135,4 +135,18 @@ public class ArrayAnnotationTest {
         assertEquals(data[4], testArrayCount.arr[2]);
     }
 
+
+    @Test
+    public void testArrayCountWithOtherData_toBinary() {
+        byte[] testData = {0, 2, 125, -1, 0, 66, 0, 0};
+
+        TestArrayCountWithOtherData testArrayCount = new TestArrayCountWithOtherData();
+        testArrayCount.flag0 = false;
+        testArrayCount.one = 2;
+        testArrayCount.arr = new int[]{125, -1, 0};
+        testArrayCount.six = 66;
+
+        byte[] output = impl.toAntBytes(testArrayCount);
+        assertArrayEquals(testData, output);
+    }
 }

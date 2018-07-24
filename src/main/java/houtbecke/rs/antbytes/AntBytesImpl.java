@@ -190,7 +190,11 @@ public class AntBytesImpl implements AntBytes {
         try {
             arrayObject = field.get(object);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Can't find field '%s' on Object '%s'", field.getName(), object.getClass().getName()));
+            throw new RuntimeException(String.format("Can't find field '%s' on Object '%s': %s", field.getName(), object.getClass().getName(), e.getLocalizedMessage()));
+        }
+
+        if (null == arrayObject) {
+            return;
         }
 
         dataLength = java.lang.reflect.Array.getLength(arrayObject);
