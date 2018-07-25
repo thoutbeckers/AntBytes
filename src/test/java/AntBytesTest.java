@@ -1,27 +1,10 @@
+import houtbecke.rs.antbytes.*;
 import org.junit.Test;
 
-import houtbecke.rs.antbytes.AntBytes;
-import houtbecke.rs.antbytes.AntBytesUtil;
-import houtbecke.rs.antbytes.Dynamic;
-import houtbecke.rs.antbytes.Flag;
-import houtbecke.rs.antbytes.LSBS16BIT;
-import houtbecke.rs.antbytes.LSBS24BIT;
-import houtbecke.rs.antbytes.LSBS32BIT;
-import houtbecke.rs.antbytes.LSBU16BIT;
-import houtbecke.rs.antbytes.LSBU24BIT;
-import houtbecke.rs.antbytes.LSBU32BIT;
-import houtbecke.rs.antbytes.LSBUXBIT;
-import houtbecke.rs.antbytes.Page;
-import houtbecke.rs.antbytes.Required;
-import houtbecke.rs.antbytes.S16BIT;
-import houtbecke.rs.antbytes.S32BIT;
-import houtbecke.rs.antbytes.S8BIT;
-import houtbecke.rs.antbytes.SXBIT;
-import houtbecke.rs.antbytes.U16BIT;
-import houtbecke.rs.antbytes.U24BIT;
-import houtbecke.rs.antbytes.U32BIT;
-import houtbecke.rs.antbytes.U8BIT;
-import houtbecke.rs.antbytes.UXBIT;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
 
@@ -352,7 +335,6 @@ public class AntBytesTest  {
 
         @LSBS24BIT(7)
         protected int seven;
-
     }
 
 
@@ -906,4 +888,21 @@ public class AntBytesTest  {
         assertArrayEquals(dynamicSignedBytes2, antBytesSigned2);
     }
 
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrongFieldTypeException()  {
+
+        class WrongFieldTypeForArray {
+            public WrongFieldTypeForArray() {}
+
+            @Array()
+            @U8BIT(1)
+            private int byte0;
+        }
+
+        WrongFieldTypeForArray model = new WrongFieldTypeForArray();
+        model.byte0 = 1;
+
+        byte[] data = impl.toAntBytes(model);
+    }
 }

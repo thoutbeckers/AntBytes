@@ -167,9 +167,9 @@ public class AntBytesImpl implements AntBytes {
                     Array arrayAnnotation = f.getAnnotation(Array.class);
 
                     if (arrayAnnotation != null) {
-                        setIntArrayOnField(output, o, f, parameters, arrayAnnotation);
+                        writeIntArrayFromField(output, o, f, parameters, arrayAnnotation);
                     } else {
-                        setIntWithConversionParameters(output, parameters, getLongFromField(f, o));
+                        writeIntWithConversionParameters(output, parameters, getLongFromField(f, o));
                     }
 
 
@@ -179,10 +179,10 @@ public class AntBytesImpl implements AntBytes {
         return output;
     }
 
-    private void setIntArrayOnField(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
+    private void writeIntArrayFromField(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
 
         if (!field.getType().isArray()) {
-            throw new RuntimeException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
+            throw new IllegalArgumentException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
         }
 
         int dataLength = 0;
@@ -218,15 +218,15 @@ public class AntBytesImpl implements AntBytes {
 
         for (int i = 0; i < dataLength; i++) {
             int value = (int) java.lang.reflect.Array.get(arrayObject, i);
-            setIntWithConversionParameters(output, parameters, value, i * parameters.byteLength);
+            writeIntWithConversionParameters(output, parameters, value, i * parameters.byteLength);
         }
     }
 
-    private void setIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value) {
-        setIntWithConversionParameters(output, parameters, value, 0);
+    private void writeIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value) {
+        writeIntWithConversionParameters(output, parameters, value, 0);
     }
 
-    private void setIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
+    private void writeIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
         if (parameters.isLSB) {
             BitBytes.outputLSB(output, parameters.bytePos + byteShift, parameters.relativeBitPos, value, 8 * parameters.byteLength);
         } else {
@@ -273,7 +273,7 @@ public class AntBytesImpl implements AntBytes {
             field.setAccessible(false);
     }
 
-    protected void setIntArrayOnField(Field field, Object object, long[] inputArray) {
+    protected void writeIntArrayFromField(Field field, Object object, long[] inputArray) {
         boolean changed = false;
         if (!field.isAccessible())
             field.setAccessible(changed = true);
@@ -494,7 +494,7 @@ public class AntBytesImpl implements AntBytes {
                         for (int i = 0; i < count; i++) {
                             result[i] = parseValueForAnnotationParameters(antBytes, parameters, i * parameters.byteLength);
                         }
-                        setIntArrayOnField(f, object, result);
+                        writeIntArrayFromField(f, object, result);
                     }
                 } else {
                     long value = parseValueForAnnotationParameters(antBytes, parameters);
