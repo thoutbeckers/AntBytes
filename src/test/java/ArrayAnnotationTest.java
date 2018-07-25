@@ -149,10 +149,62 @@ public class ArrayAnnotationTest {
     }
 
 
-
     @Test(expected = RuntimeException.class)
     public void inputDataContainsLessItemsThenRequired() {
         byte[] testData = {1};
         TestArrayCount testArrayCount = impl.instanceFromAntBytes(TestArrayCount.class, testData);
     }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void arrayFieldContainsLessItemsThenRequired() {
+        TestArrayCount model = new TestArrayCount();
+        model.arr = new int[]{1};
+        byte[] data = impl.toAntBytes(model);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void arrayFieldContainsMoreItemsThenRequired() {
+        TestArrayCount model = new TestArrayCount();
+        model.arr = new int[]{1, 2, 3};
+        byte[] data = impl.toAntBytes(model);
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void wrongFieldTypeException() {
+        class WrongFieldTypeForArray {
+            public WrongFieldTypeForArray() {
+            }
+
+            @Array()
+            @U8BIT(1)
+            private int byte0;
+        }
+
+        WrongFieldTypeForArray model = new WrongFieldTypeForArray();
+        model.byte0 = 1;
+
+        byte[] data = impl.toAntBytes(model);
+    }
+
+
+    @Test(expected = IllegalArgumentException.class)
+    public void inputArrayExceedsOutputDataCapacity() {
+        class BigArray {
+            public BigArray() {
+            }
+
+            @Array
+            @U8BIT
+            public long[] arr;
+        }
+
+        BigArray model = new BigArray();
+        model.arr = new long[]{1,1,1,1,1,1,1,1,1,1};
+
+        byte[] data = impl.toAntBytes(model, 8);
+    }
+
+
 }

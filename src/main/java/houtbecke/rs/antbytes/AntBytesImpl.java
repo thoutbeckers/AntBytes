@@ -187,10 +187,19 @@ public class AntBytesImpl implements AntBytes {
 
         int dataLength = 0;
         Object arrayObject = null;
+        boolean changed = false;
+
         try {
+            if (!field.isAccessible()) {
+                field.setAccessible(changed = true);
+            }
             arrayObject = field.get(object);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Can't find field '%s' on Object '%s': %s", field.getName(), object.getClass().getName(), e.getLocalizedMessage()));
+            
+        }
+
+        if (changed) {
+            field.setAccessible(false);
         }
 
         if (null == arrayObject) {
@@ -207,13 +216,13 @@ public class AntBytesImpl implements AntBytes {
 
 
         if (expectedLength > 0 && expectedLength != dataLength) {
-            throw new RuntimeException(String.format("Data length (%d) doesn't match expected length (%d)", dataLength, expectedLength));
+            throw new IllegalArgumentException(String.format("Data length (%d) doesn't match expected length (%d)", dataLength, expectedLength));
         }
 
         int remainingLength = (output.length - parameters.bytePos) / parameters.byteLength;
 
         if (remainingLength < dataLength) {
-            throw new RuntimeException(String.format("Remaining length (%d) is less then data length (%d)", remainingLength, dataLength));
+            throw new IllegalArgumentException(String.format("Remaining length (%d) is less then data length (%d)", remainingLength, dataLength));
         }
 
         for (int i = 0; i < dataLength; i++) {
@@ -273,7 +282,7 @@ public class AntBytesImpl implements AntBytes {
             field.setAccessible(false);
     }
 
-    protected void writeIntArrayFromField(Field field, Object object, long[] inputArray) {
+    protected void setIntArrayToField(Field field, Object object, long[] inputArray) {
         boolean changed = false;
         if (!field.isAccessible())
             field.setAccessible(changed = true);
@@ -494,7 +503,7 @@ public class AntBytesImpl implements AntBytes {
                         for (int i = 0; i < count; i++) {
                             result[i] = parseValueForAnnotationParameters(antBytes, parameters, i * parameters.byteLength);
                         }
-                        writeIntArrayFromField(f, object, result);
+                        setIntArrayToField(f, object, result);
                     }
                 } else {
                     long value = parseValueForAnnotationParameters(antBytes, parameters);

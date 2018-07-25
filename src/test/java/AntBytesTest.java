@@ -887,22 +887,4 @@ public class AntBytesTest  {
         byte[] antBytesSigned2 = impl.toAntBytes(dynamicMessageSigned2, 8);
         assertArrayEquals(dynamicSignedBytes2, antBytesSigned2);
     }
-
-
-    @Test(expected = IllegalArgumentException.class)
-    public void wrongFieldTypeException()  {
-
-        class WrongFieldTypeForArray {
-            public WrongFieldTypeForArray() {}
-
-            @Array()
-            @U8BIT(1)
-            private int byte0;
-        }
-
-        WrongFieldTypeForArray model = new WrongFieldTypeForArray();
-        model.byte0 = 1;
-
-        byte[] data = impl.toAntBytes(model);
-    }
 }
