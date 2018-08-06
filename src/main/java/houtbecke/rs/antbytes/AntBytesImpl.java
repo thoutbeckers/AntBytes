@@ -164,10 +164,10 @@ public class AntBytesImpl implements AntBytes {
                         dynamicByte = dynamicByte + parameters.byteLength;
                     }
 
-                    Array arrayAnnotation = f.getAnnotation(Array.class);
+                    ValuesArray valuesArrayAnnotation = f.getAnnotation(ValuesArray.class);
 
-                    if (arrayAnnotation != null) {
-                        writeIntArrayFromField(output, o, f, parameters, arrayAnnotation);
+                    if (valuesArrayAnnotation != null) {
+                        writeIntArrayFromField(output, o, f, parameters, valuesArrayAnnotation);
                     } else {
                         writeIntWithConversionParameters(output, parameters, getLongFromField(f, o));
                     }
@@ -179,7 +179,7 @@ public class AntBytesImpl implements AntBytes {
         return output;
     }
 
-    private void writeIntArrayFromField(byte[] output, Object object, Field field, ValueConversionParameters parameters, Array arrayAnnotation) {
+    private void writeIntArrayFromField(byte[] output, Object object, Field field, ValueConversionParameters parameters, ValuesArray valuesArrayAnnotation) {
 
         if (!field.getType().isArray()) {
             throw new IllegalArgumentException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
@@ -212,7 +212,7 @@ public class AntBytesImpl implements AntBytes {
             return;
         }
 
-        int expectedLength = arrayAnnotation.value();
+        int expectedLength = valuesArrayAnnotation.value();
 
 
         if (expectedLength > 0 && expectedLength != dataLength) {
@@ -494,10 +494,10 @@ public class AntBytesImpl implements AntBytes {
                     dynamicByte += parameters.byteLength;
 
 
-                Array array = f.getAnnotation(Array.class);
+                ValuesArray valuesArray = f.getAnnotation(ValuesArray.class);
 
-                if (array != null) {
-                    int count = array.value() > 0 ? array.value() : (antBytes.length - parameters.bytePos) / parameters.byteLength;
+                if (valuesArray != null) {
+                    int count = valuesArray.value() > 0 ? valuesArray.value() : (antBytes.length - parameters.bytePos) / parameters.byteLength;
                     if (count > 0) {
                         long[] result = new long[count];
                         for (int i = 0; i < count; i++) {
