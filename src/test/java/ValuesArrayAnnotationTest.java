@@ -4,7 +4,7 @@ import static org.junit.Assert.*;
 
 import houtbecke.rs.antbytes.*;
 
-public class ArrayAnnotationTest {
+public class ValuesArrayAnnotationTest {
 
     AntBytes impl = AntBytesUtil.getInstance();
 
@@ -12,7 +12,7 @@ public class ArrayAnnotationTest {
         public TestArrayOnly() {
         }
 
-        @Array
+        @ValuesArray
         @U8BIT
         public int[] arr;
     }
@@ -21,7 +21,7 @@ public class ArrayAnnotationTest {
         public TestArrayCount() {
         }
 
-        @Array(2)
+        @ValuesArray(2)
         @S8BIT(0)
         public int[] arr;
     }
@@ -36,7 +36,7 @@ public class ArrayAnnotationTest {
         @U8BIT(1)
         public int one;
 
-        @Array
+        @ValuesArray
         @U24BIT(2)
         public int[] arr;
     }
@@ -51,7 +51,7 @@ public class ArrayAnnotationTest {
         @S8BIT(1)
         public int one;
 
-        @Array(3)
+        @ValuesArray(3)
         @S8BIT(2)
         public int[] arr;
 
@@ -177,7 +177,7 @@ public class ArrayAnnotationTest {
             public WrongFieldTypeForArray() {
             }
 
-            @Array()
+            @ValuesArray()
             @U8BIT(1)
             private int byte0;
         }
@@ -195,7 +195,7 @@ public class ArrayAnnotationTest {
             public BigArray() {
             }
 
-            @Array
+            @ValuesArray
             @U8BIT
             public long[] arr;
         }
