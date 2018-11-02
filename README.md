@@ -3,4 +3,4 @@
 AntBytes
 ========
 
-Simple java library for using annotation to process 8 byte ANT+ messages
+Simple java library for using annotation to process ANT and bluetooth byte messages

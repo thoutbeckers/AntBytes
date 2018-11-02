@@ -1,27 +1,10 @@
+import houtbecke.rs.antbytes.*;
 import org.junit.Test;
 
-import houtbecke.rs.antbytes.AntBytes;
-import houtbecke.rs.antbytes.AntBytesUtil;
-import houtbecke.rs.antbytes.Dynamic;
-import houtbecke.rs.antbytes.Flag;
-import houtbecke.rs.antbytes.LSBS16BIT;
-import houtbecke.rs.antbytes.LSBS24BIT;
-import houtbecke.rs.antbytes.LSBS32BIT;
-import houtbecke.rs.antbytes.LSBU16BIT;
-import houtbecke.rs.antbytes.LSBU24BIT;
-import houtbecke.rs.antbytes.LSBU32BIT;
-import houtbecke.rs.antbytes.LSBUXBIT;
-import houtbecke.rs.antbytes.Page;
-import houtbecke.rs.antbytes.Required;
-import houtbecke.rs.antbytes.S16BIT;
-import houtbecke.rs.antbytes.S32BIT;
-import houtbecke.rs.antbytes.S8BIT;
-import houtbecke.rs.antbytes.SXBIT;
-import houtbecke.rs.antbytes.U16BIT;
-import houtbecke.rs.antbytes.U24BIT;
-import houtbecke.rs.antbytes.U32BIT;
-import houtbecke.rs.antbytes.U8BIT;
-import houtbecke.rs.antbytes.UXBIT;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
 
@@ -41,7 +24,7 @@ public class AntBytesTest  {
 
         @U32BIT(4)
         public long four;
-        
+
     }
 
     public static class TestAntBitMessage {
@@ -179,7 +162,7 @@ public class AntBytesTest  {
 
         @LSBUXBIT(value = 1, startBit = 4, bitLength = 12)
         protected int one;
-;
+        ;
 
     }
 
@@ -352,7 +335,6 @@ public class AntBytesTest  {
 
         @LSBS24BIT(7)
         protected int seven;
-
     }
 
 
@@ -531,7 +513,7 @@ public class AntBytesTest  {
     }
 
 
-        @Test
+    @Test
     public void toBytesSignedHigh() {
 
         TestSignedAntMessage highTest = new TestSignedAntMessage();
@@ -905,5 +887,4 @@ public class AntBytesTest  {
         byte[] antBytesSigned2 = impl.toAntBytes(dynamicMessageSigned2, 8);
         assertArrayEquals(dynamicSignedBytes2, antBytesSigned2);
     }
-
 }
