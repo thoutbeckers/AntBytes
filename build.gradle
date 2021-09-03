@@ -20,6 +20,6 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    testCompile "junit:junit:${junitVersion}"
+    testImplementation "junit:junit:${junitVersion}"
 }
 
