@@ -127,7 +127,7 @@ public class AntBytesImpl implements AntBytes {
                 }
             }
 
-            for (Annotation anon : f.getAnnotations())
+            for (Annotation anon : f.getAnnotations()) {
                 try {
                     Class type = anon.annotationType();
 
@@ -152,7 +152,18 @@ public class AntBytesImpl implements AntBytes {
                     } else if (type == Page.class) {
                         BitBytes.output(output, 0, ((Page) anon).value(), 8);
                         continue;
+                    } else if (type == Required.class) {
+                        if (f.isAnnotationPresent(U8BIT.class)) {
+                            U8BIT ubit8 = f.getAnnotation(U8BIT.class);
+                            BitBytes.output(output, ubit8.value() * 8, ((Required) anon).value(), 8);
+                        }
+                        continue;
+                    } else if (type == U8BIT.class) {
+                        if (f.isAnnotationPresent(Required.class)) {
+                            continue;
+                        }
                     }
+
 
                     ValueConversionParameters parameters = new ValueConversionParameters(anon, moveByte);
 
@@ -172,9 +183,9 @@ public class AntBytesImpl implements AntBytes {
                         writeIntWithConversionParameters(output, parameters, getLongFromField(f, o));
                     }
 
-
                 } catch (IllegalAccessException ignore) {
                 }
+            }
         }
         return output;
     }
