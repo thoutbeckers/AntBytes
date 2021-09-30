@@ -71,8 +71,8 @@ public class AntBytesTest  {
         @Page(4)
         private int page;
 
-        @Required(2)
         @U8BIT(1)
+        @Required(2)
         int one;
 
         @U16BIT(2)
@@ -650,6 +650,27 @@ public class AntBytesTest  {
 
         Object message6 =  impl.fromAntBytes(requiredSixBytes);
         assertNull(message6);
+    }
+
+
+    @Test
+    public void testRequired() {
+        TestRequiredOne object1 = new TestRequiredOne();
+        byte[] antBytes = impl.toAntBytes(object1);
+
+
+        TestRequiredOne object2 =  impl.instanceFromAntBytes(TestRequiredOne.class, antBytes);
+        assertEquals(4, object2.page);
+        assertEquals(1, object2.one);
+
+
+        TestRequiredTwo object3= new TestRequiredTwo();
+        antBytes = impl.toAntBytes(object3);
+
+
+        TestRequiredTwo object4 =  impl.instanceFromAntBytes(TestRequiredTwo.class, antBytes);
+        assertEquals(4, object4.page);
+        assertEquals(2, object4.one);
     }
 
     @Test
