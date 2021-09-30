@@ -11,28 +11,15 @@ buildscript {
 
         // make sure an up to date version of httpmime is used for the coveralls plugin
         classpath "org.apache.httpcomponents:httpmime:${httpmimeVersion}"
-        classpath "org.kt3k.gradle.plugin:coveralls-gradle-plugin:${coverallsGradlePluginVersion}"
     }
 }
 
 apply plugin: 'java'
-apply plugin: 'jacoco'
-apply plugin: 'com.github.kt3k.coveralls'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    testCompile "junit:junit:${junitVersion}"
+    testImplementation "junit:junit:${junitVersion}"
 }
 
-jacocoTestReport {
-
-    reports {
-        xml.enabled true
-    }
-
-    group = "Reporting"
-    description = "Generate Jacoco coverage reports after running tests."
-    additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
-}
