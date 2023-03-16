@@ -1,25 +1,8 @@
-repositories {
-    mavenCentral()
-}
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-
-        // make sure an up to date version of httpmime is used for the coveralls plugin
-        classpath "org.apache.httpcomponents:httpmime:${httpmimeVersion}"
-    }
-}
-
 apply plugin: 'java'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    testImplementation "junit:junit:${junitVersion}"
+    testImplementation libs.junit
 }
-

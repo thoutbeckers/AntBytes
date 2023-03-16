@@ -1,0 +1,5 @@
+[versions]
+gradleplugin = "7.4.1"
+
+[libraries]
+junit = { module = "junit:junit", version = "4.12" }
