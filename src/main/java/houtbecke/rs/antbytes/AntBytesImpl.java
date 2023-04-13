@@ -9,35 +9,39 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public class AntBytesImpl implements AntBytes {
 
-    class SortedField implements Comparable{
+    static class SortedField implements Comparable<SortedField> {
 
-        SortedField(Field field,boolean flag, boolean dynamic, int order){
+        Field field;
+        boolean flag;
+        boolean dynamic;
+        int order;
+
+        SortedField(Field field, boolean flag, boolean dynamic, int order) {
             this.field = field;
             this.order = order;
             this.flag = flag;
             this.dynamic = dynamic;
         }
 
-        Field field;
-        boolean flag;
-        boolean dynamic;
-
-        int order;
-
         @Override
-        public int compareTo(Object o) {
-            if (o instanceof SortedField ){
-                if (o == this) return 0;
-                SortedField otherField = (SortedField)o;
-                if (otherField.flag && !this.flag) return 1;
-                if (!otherField.flag && this.flag) return -1;
-                if (otherField.dynamic && !this.dynamic) return 1;
-                if ((otherField.dynamic && this.dynamic) || (otherField.flag && this.flag)){
-                    if (otherField.order > this.order) return -1;
-                    if (otherField.order == this.order) throw new RuntimeException("order has to be unique");
-                    if (otherField.order < this.order) return 1;
+        public int compareTo(@Nonnull SortedField o) {
+            if (o instanceof SortedField) {
+                if (o == this) { return 0; }
+                SortedField otherField = (SortedField) o;
+                if (otherField.flag && !this.flag) { return 1; }
+                if (!otherField.flag && this.flag) { return -1; }
+                if (otherField.dynamic && !this.dynamic) { return 1; }
+                if ((otherField.dynamic && this.dynamic) || (otherField.flag && this.flag)) {
+                    if (otherField.order > this.order) { return -1; }
+                    if (otherField.order == this.order) {
+                        throw new RuntimeException("order has to be unique");
+                    }
+                    if (otherField.order < this.order) { return 1; }
 
                 }
             }
@@ -45,70 +49,67 @@ public class AntBytesImpl implements AntBytes {
             return -1;
         }
     }
+    Map<Integer, Object> mapping = Collections.synchronizedMap(new HashMap<Integer, Object>());
 
-
-    protected long getLongFromField(Field f, Object o) throws IllegalAccessException {
+    protected long getLongFromField(@Nonnull Field f,
+                                    @Nonnull Object o) throws IllegalAccessException {
         boolean changed = false;
-        if (!f.isAccessible())
-            f.setAccessible(changed = true);
+        if (!f.isAccessible()) { f.setAccessible(changed = true); }
 
         long ret = f.getLong(o);
-        if (changed)
-            f.setAccessible(false);
+        if (changed) { f.setAccessible(false); }
         return ret;
     }
 
-    protected boolean getBooleanFromField(Field f, Object o) throws IllegalAccessException {
+    protected boolean getBooleanFromField(@Nonnull Field f,
+                                          @Nonnull Object o) throws IllegalAccessException {
         boolean changed = false;
-        if (!f.isAccessible())
-            f.setAccessible(changed = true);
+        if (!f.isAccessible()) { f.setAccessible(changed = true); }
 
         boolean ret = f.getBoolean(o);
-        if (changed)
-            f.setAccessible(false);
+        if (changed) { f.setAccessible(false); }
         return ret;
     }
 
+    @Nonnull
     @Override
-    public <T>byte[] toAntBytes(T o) {
-        return toAntBytes(o,8);
+    public <T> byte[] toAntBytes(@Nonnull T o) {
+        return toAntBytes(o, 8);
     }
 
-
-    SortedSet<SortedField> sortFields(Field[] fields){
+    SortedSet<SortedField> sortFields(Field[] fields) {
         SortedSet<SortedField> sortedSet = new TreeSet<>();
-        for (Field f: fields) {
+        for (Field f : fields) {
             Dynamic dynamic = f.getAnnotation(Dynamic.class);
             Flag flag = f.getAnnotation(Flag.class);
             boolean hasFlag = (flag != null);
             boolean hasDynamic = (dynamic != null);
             int order = 0;
-            if (hasDynamic)
-                order = dynamic.order();
-            else if (hasFlag)
-                    order =flag.value() + flag.startByte()*8;
+            if (hasDynamic) { order = dynamic.order(); } else if (hasFlag) {
+                order = flag.value() + flag.startByte() * 8;
+            }
             sortedSet.add(new SortedField(f, hasFlag, hasDynamic, order));
         }
-        return  sortedSet;
+        return sortedSet;
     }
 
+    @Nonnull
     @Override
-    public <T> byte[] toAntBytes(T o, int size) {
+    public <T> byte[] toAntBytes(@Nonnull T o, int size) {
         byte[] output = new byte[size];
         int dynamicByte = 0;
 
-        HashMap<Integer,Boolean> flags = new HashMap<>();
+        HashMap<Integer, Boolean> flags = new HashMap<>();
 
-        for (SortedField sortedField: sortFields(o.getClass().getDeclaredFields())) {
-            final Field f =sortedField.field;
-            for (Annotation anon : f.getAnnotations()){
+        for (SortedField sortedField : sortFields(o.getClass().getDeclaredFields())) {
+            final Field f = sortedField.field;
+            for (Annotation anon : f.getAnnotations()) {
                 try {
                     Class type = anon.annotationType();
                     if (type == Flag.class) {
                         Flag flag = (Flag) anon;
                         boolean flagValue = getBooleanFromField(f, o);
-                        if (flag.startByte() ==0 )
-                             flags.put(flag.value(),flagValue);
+                        if (flag.startByte() == 0) { flags.put(flag.value(), flagValue); }
                     }
 
                 } catch (IllegalAccessException ignore) {
@@ -117,10 +118,10 @@ public class AntBytesImpl implements AntBytes {
             }
 
             Dynamic dynamic = f.getAnnotation(Dynamic.class);
-            int moveByte=0;
+            int moveByte = 0;
 
-            if (dynamic!=null){
-                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.inverse()) ) {
+            if (dynamic != null) {
+                if (flags.containsKey(dynamic.value()) && (flags.get(dynamic.value()) == !dynamic.inverse())) {
                     moveByte = dynamicByte;
                 } else {
                     continue;
@@ -164,7 +165,6 @@ public class AntBytesImpl implements AntBytes {
                         }
                     }
 
-
                     ValueConversionParameters parameters = new ValueConversionParameters(anon, moveByte);
 
                     if (!parameters.isValid()) {
@@ -190,7 +190,193 @@ public class AntBytesImpl implements AntBytes {
         return output;
     }
 
-    private void writeIntArrayFromField(byte[] output, Object object, Field field, ValueConversionParameters parameters, ValuesArray valuesArrayAnnotation) {
+    protected void setBooleanOnField(@Nonnull Field field,
+                                     @Nonnull Object object,
+                                     boolean value) {
+        boolean changed = false;
+        if (!field.isAccessible()) { field.setAccessible(changed = true); }
+        try {
+            field.setBoolean(object, value);
+        } catch (IllegalAccessException ignore) {
+        }
+
+        if (changed) { field.setAccessible(false); }
+    }
+
+    protected void setLongOnField(@Nonnull Field field,
+                                  @Nonnull Object object,
+                                  long value) {
+        setOnField(true, field, object, value);
+    }
+
+    protected void setIntOnField(@Nonnull Field field,
+                                 @Nonnull Object object,
+                                 long value) {
+        setOnField(false, field, object, value);
+    }
+
+    protected void setOnField(boolean asLong,
+                              @Nonnull Field field,
+                              @Nonnull Object object,
+                              long value) {
+        boolean changed = false;
+        if (!field.isAccessible()) { field.setAccessible(changed = true); }
+
+        try {
+            if (!asLong) { field.setInt(object, (int) value); } else {
+                field.setInt(object, (int) value);
+            }
+        } catch (IllegalAccessException ignore) {
+        }
+
+        if (changed) { field.setAccessible(false); }
+    }
+
+    protected void setIntArrayToField(@Nonnull Field field,
+                                      @Nonnull Object object,
+                                      @Nonnull long[] inputArray) {
+        boolean changed = false;
+        if (!field.isAccessible()) { field.setAccessible(changed = true); }
+
+        try {
+            Object arrayObject = java.lang.reflect.Array.newInstance(field.getType().getComponentType(), inputArray.length);
+            for (int i = 0; i < inputArray.length; i++) {
+                java.lang.reflect.Array.setInt(arrayObject, i, (int) inputArray[i]);
+            }
+            field.set(object, arrayObject);
+        } catch (IllegalAccessException ignore) {
+        }
+
+        if (changed) { field.setAccessible(false); }
+    }
+
+    @Override
+    public <T> T instanceFromAntBytes(@Nonnull Class<? extends T> clazz, @Nonnull byte[] antBytes) {
+        try {
+            T result = clazz.newInstance();
+            fromAntBytes(result, clazz, antBytes);
+
+            return result;
+        } catch (InstantiationException e) {
+            return null;
+        } catch (IllegalAccessException e) {
+            return null;
+        }
+
+    }
+
+    @Override
+    public <T> T fromAntBytes(@Nonnull T object,
+                              @Nonnull byte[] antBytes) {
+        fromAntBytes(object, object.getClass(), antBytes);
+
+        return object;
+    }
+
+    protected int findPage(@Nonnull Class clazz) {
+        for (Field f : clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Page.class)) {
+                Page page = f.getAnnotation(Page.class);
+                return page.value();
+            }
+        }
+        return -1;
+    }
+
+    protected boolean hasRequired(@Nonnull Class clazz) {
+        for (Field f : clazz.getDeclaredFields()) {
+            if (f.isAnnotationPresent(Required.class)) {
+                return true;
+
+            }
+        }
+        return false;
+    }
+
+    public boolean hasAllRequired(@Nonnull Class clazz,
+                                  @Nonnull byte[] antBytes) {
+        for (Field f : clazz.getDeclaredFields()) {
+            if (!f.isAnnotationPresent(Required.class)) { continue; }
+
+            Required required = f.getAnnotation(Required.class);
+
+            for (Annotation anon : f.getAnnotations()) {
+                Class type = anon.annotationType();
+                if (type == U8BIT.class) {
+                    U8BIT u8bit = (U8BIT) anon;
+                    if (required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8)) {
+                        return false;
+                    }
+
+                } else if (type == U16BIT.class) {
+                    U16BIT u16bit = (U16BIT) anon;
+                    if (required.value() != BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16)) {
+                        return false;
+                    }
+
+                } else if (type == U32BIT.class) {
+                    U32BIT u32bit = (U32BIT) anon;
+                    if (required.value() != BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32)) {
+                        return false;
+                    }
+
+                } else if (type == UXBIT.class) {
+                    UXBIT uxbit = (UXBIT) anon;
+                    if (required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength())) {
+                        return false;
+                    }
+                }
+            }
+
+        }
+        return true;
+    }
+
+    @Override
+    public void register(@Nonnull Class clazz) {
+        int page = findPage(clazz);
+        if (page == -1) { return; }
+        if (!hasRequired(clazz)) {
+            mapping.put(page, clazz);
+        } else {
+            ArrayList<Class> subpages;
+            if (mapping.containsKey(page) && (mapping.get(page) instanceof ArrayList)) {
+                subpages = (ArrayList<Class>) mapping.get(page);
+            } else {
+                subpages = new ArrayList<Class>();
+            }
+            subpages.add(clazz);
+            mapping.put(page, subpages);
+
+        }
+
+    }
+
+    @Nullable
+    @Override
+    public Object fromAntBytes(@Nonnull byte[] antBytes) {
+        int page = antBytes[0] & 0xFF;
+        Object o = mapping.get(page);
+        Class clazz = null;
+        if (o instanceof ArrayList) {
+            ArrayList<Class> subpages = (ArrayList<Class>) o;
+            for (Class c : subpages) {
+                if (hasAllRequired(c, antBytes)) { return instanceFromAntBytes(c, antBytes); }
+            }
+
+        } else {
+            clazz = (Class) mapping.get(page);
+        }
+
+        if (clazz == null) { return null; }
+        return instanceFromAntBytes(clazz, antBytes);
+    }
+
+    private void writeIntArrayFromField(@Nonnull byte[] output,
+                                        @Nonnull Object object,
+                                        @Nonnull Field field,
+                                        @Nonnull ValueConversionParameters parameters,
+                                        @Nonnull ValuesArray valuesArrayAnnotation) {
 
         if (!field.getType().isArray()) {
             throw new IllegalArgumentException(String.format("Field %s, marked as an array, is not of an array type", field.getName()));
@@ -206,7 +392,7 @@ public class AntBytesImpl implements AntBytes {
             }
             arrayObject = field.get(object);
         } catch (Exception e) {
-            
+
         }
 
         if (changed) {
@@ -225,7 +411,6 @@ public class AntBytesImpl implements AntBytes {
 
         int expectedLength = valuesArrayAnnotation.value();
 
-
         if (expectedLength > 0 && expectedLength != dataLength) {
             throw new IllegalArgumentException(String.format("Data length (%d) doesn't match expected length (%d)", dataLength, expectedLength));
         }
@@ -242,11 +427,16 @@ public class AntBytesImpl implements AntBytes {
         }
     }
 
-    private void writeIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value) {
+    private void writeIntWithConversionParameters(@Nonnull byte[] output,
+                                                  @Nonnull ValueConversionParameters parameters,
+                                                  long value) {
         writeIntWithConversionParameters(output, parameters, value, 0);
     }
 
-    private void writeIntWithConversionParameters(byte[] output, ValueConversionParameters parameters, long value, int byteShift) {
+    private void writeIntWithConversionParameters(@Nonnull byte[] output,
+                                                  @Nonnull ValueConversionParameters parameters,
+                                                  long value,
+                                                  int byteShift) {
         if (parameters.isLSB) {
             BitBytes.outputLSB(output, parameters.bytePos + byteShift, parameters.relativeBitPos, value, 8 * parameters.byteLength);
         } else {
@@ -254,198 +444,13 @@ public class AntBytesImpl implements AntBytes {
         }
     }
 
-
-    protected void setBooleanOnField(Field field, Object object, boolean value)  {
-        boolean changed = false;
-        if (!field.isAccessible())
-            field.setAccessible(changed = true);
-        try {
-            field.setBoolean(object, value);
-        } catch (IllegalAccessException ignore) {
-        }
-
-        if (changed)
-            field.setAccessible(false);
-    }
-
-    protected void setLongOnField(Field field, Object object, long value)  {
-        setOnField(true, field, object, value);
-    }
-
-    protected void setIntOnField(Field field, Object object, long value) {
-        setOnField(false, field, object, value);
-    }
-
-    protected void setOnField(boolean asLong, Field field, Object object, long value) {
-        boolean changed = false;
-        if (!field.isAccessible())
-            field.setAccessible(changed = true);
-
-        try {
-            if (!asLong)
-                field.setInt(object, (int)value);
-            else
-                field.setInt(object, (int)value);
-        } catch (IllegalAccessException ignore) {
-        }
-
-        if (changed)
-            field.setAccessible(false);
-    }
-
-    protected void setIntArrayToField(Field field, Object object, long[] inputArray) {
-        boolean changed = false;
-        if (!field.isAccessible())
-            field.setAccessible(changed = true);
-
-        try {
-            Object arrayObject = java.lang.reflect.Array.newInstance(field.getType().getComponentType(), inputArray.length);
-            for (int i = 0; i < inputArray.length; i++) {
-                java.lang.reflect.Array.setInt(arrayObject, i, (int) inputArray[i]);
-            }
-            field.set(object, arrayObject);
-        } catch (IllegalAccessException ignore) {
-        }
-
-        if (changed)
-            field.setAccessible(false);
-    }
-
-    @Override
-    public <T>T instanceFromAntBytes(Class<? extends T> clazz, byte[] antBytes) {
-        try {
-            T result = clazz.newInstance();
-            fromAntBytes(result, clazz, antBytes);
-
-            return result;
-        } catch (InstantiationException e) {
-            return null;
-        } catch (IllegalAccessException e) {
-            return null;
-        }
-
-    }
-
-    @Override
-    public <T>T fromAntBytes(T object, byte[] antBytes) {
-        fromAntBytes(object, object.getClass(), antBytes);
-
-        return object;
-    }
-
-    Map<Integer, Object> mapping = Collections.synchronizedMap(new HashMap<Integer, Object>());
-
-
-
-    protected int findPage(Class clazz) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (f.isAnnotationPresent(Page.class)) {
-                Page page = f.getAnnotation(Page.class);
-                return page.value();
-            }
-        }
-        return -1;
-    }
-
-
-    protected boolean hasRequired(Class clazz) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (f.isAnnotationPresent(Required.class)) {
-               return true;
-
-            }
-        }
-        return false;
-    }
-
-    public  boolean hasAllRequired(Class clazz, byte[] antBytes) {
-        for (Field f: clazz.getDeclaredFields()) {
-            if (!f.isAnnotationPresent(Required.class))  continue;
-
-            Required required = f.getAnnotation(Required.class);
-
-            for (Annotation anon : f.getAnnotations()) {
-                Class type = anon.annotationType();
-                if (type == U8BIT.class) {
-                    U8BIT u8bit = (U8BIT) anon;
-                    if ( required.value() != BitBytes.input(antBytes, u8bit.value(), u8bit.startBit(), 8))
-                        return false;
-
-                } else if (type == U16BIT.class) {
-                    U16BIT u16bit = (U16BIT) anon;
-                    if ( required.value() !=BitBytes.input(antBytes, u16bit.value(), u16bit.startBit(), 16))
-                        return false;
-
-                } else if (type == U32BIT.class) {
-                    U32BIT u32bit = (U32BIT) anon;
-                    if ( required.value() !=BitBytes.input(antBytes, u32bit.value(), u32bit.startBit(), 32))
-                        return false;
-
-                } else if (type == UXBIT.class) {
-                    UXBIT uxbit = (UXBIT) anon;
-                    if ( required.value() != BitBytes.input(antBytes, uxbit.value(), uxbit.startBit(), uxbit.bitLength()))
-                        return false;
-                }
-            }
-
-
-
-        }
-        return true;
-    }
-
-
-
-    @Override
-    public void register(Class clazz) {
-        int page = findPage(clazz);
-        if (page == -1)
-            return;
-        if(!hasRequired(clazz)){
-            mapping.put(page, clazz);
-        }else{
-            ArrayList<Class> subpages;
-          if (mapping.containsKey(page) && (mapping.get(page) instanceof ArrayList))
-            {
-                subpages =  (ArrayList<Class>)mapping.get(page);
-            }else{
-                subpages = new ArrayList<Class>();
-            }
-            subpages.add(clazz);
-            mapping.put(page, subpages);
-
-        }
-
-    }
-
-    @Override
-    public Object fromAntBytes(byte[] antBytes) {
-        int page = antBytes[0] & 0xFF;
-       Object o = mapping.get(page);
-        Class clazz = null;
-        if (o instanceof ArrayList){
-            ArrayList<Class> subpages =   (ArrayList<Class>) o;
-            for(Class c : subpages){
-                if (hasAllRequired(c,antBytes))
-                    return instanceFromAntBytes(c, antBytes);
-            }
-
-        }else{
-            clazz = (Class) mapping.get(page);
-        }
-
-        if (clazz == null)
-            return null;
-        return instanceFromAntBytes(clazz, antBytes);
-    }
-
     private <T> void fromAntBytes(final T object, final Class<? extends T> clazz, final byte[] antBytes) {
-        final HashMap<Integer,Boolean> flags = new HashMap<>();
+        final HashMap<Integer, Boolean> flags = new HashMap<>();
         int dynamicByte = 0;
 
         SortedSet<SortedField> fields = sortFields(clazz.getDeclaredFields());
-        for (SortedField sortedField:fields ) {
-            final Field f =sortedField.field;
+        for (SortedField sortedField : fields) {
+            final Field f = sortedField.field;
 
             for (Annotation anon : f.getAnnotations()) {
                 Class type = anon.annotationType();
@@ -455,24 +460,20 @@ public class AntBytesImpl implements AntBytes {
                     int byteNr = flag.startByte() + (flag.value() / 8);
                     boolean flagValue = BitBytes.input(antBytes, byteNr, positionInByte, 1) == 1;
                     setBooleanOnField(f, object, flagValue);
-                    if (flag.startByte() == 0)
-                        flags.put(flag.value(), flagValue);
+                    if (flag.startByte() == 0) { flags.put(flag.value(), flagValue); }
                 }
             }
 
             Dynamic dynamic = f.getAnnotation(Dynamic.class);
             int moveByte = 0;
 
-
-
             if (dynamic != null) {
-                if (flags.containsKey(dynamic.value()) &&  (flags.get(dynamic.value()) == !dynamic.inverse()) ) {
+                if (flags.containsKey(dynamic.value()) && (flags.get(dynamic.value()) == !dynamic.inverse())) {
                     moveByte = dynamicByte;
                 } else {
                     continue;
                 }
             }
-
 
             for (Annotation anon : f.getAnnotations()) {
                 Class type = anon.annotationType();
@@ -494,16 +495,13 @@ public class AntBytesImpl implements AntBytes {
                     continue;
                 }
 
-
                 ValueConversionParameters parameters = new ValueConversionParameters(anon, moveByte);
 
                 if (!parameters.isValid()) {
                     continue;
                 }
 
-                if (dynamic != null)
-                    dynamicByte += parameters.byteLength;
-
+                if (dynamic != null) { dynamicByte += parameters.byteLength; }
 
                 ValuesArray valuesArray = f.getAnnotation(ValuesArray.class);
 
@@ -531,8 +529,7 @@ public class AntBytesImpl implements AntBytes {
     private long parseValueForAnnotationParameters(byte[] antBytes, ValueConversionParameters parameters, int byteShift) {
         if (parameters.isLSB) {
             return BitBytes.inputLSB(antBytes, parameters.bytePos + byteShift, parameters.relativeBitPos, 8 * parameters.byteLength, parameters.signed);
-        }
-        else {
+        } else {
             return BitBytes.input(antBytes, parameters.bytePos + byteShift, parameters.relativeBitPos, 8 * parameters.byteLength, parameters.signed);
         }
     }

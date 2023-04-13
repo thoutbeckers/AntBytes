@@ -1,8 +1,15 @@
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
 import org.junit.Test;
 
-import static org.junit.Assert.*;
-
-import houtbecke.rs.antbytes.*;
+import houtbecke.rs.antbytes.AntBytes;
+import houtbecke.rs.antbytes.AntBytesUtil;
+import houtbecke.rs.antbytes.Flag;
+import houtbecke.rs.antbytes.S8BIT;
+import houtbecke.rs.antbytes.U24BIT;
+import houtbecke.rs.antbytes.U8BIT;
+import houtbecke.rs.antbytes.ValuesArray;
 
 public class ValuesArrayAnnotationTest {
 
@@ -149,10 +156,13 @@ public class ValuesArrayAnnotationTest {
     }
 
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void inputDataContainsLessItemsThenRequired() {
         byte[] testData = {1};
+
         TestArrayCount testArrayCount = impl.instanceFromAntBytes(TestArrayCount.class, testData);
+        assertEquals(1, testArrayCount.arr[0]);
+        assertEquals(0, testArrayCount.arr[1]);
     }
 
 
