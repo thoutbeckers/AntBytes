@@ -4,6 +4,8 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 dependencies {
-    implementation libs.jsr305
     testImplementation libs.junit4
+
+    compileOnly libs.jsr305
+    testCompileOnly libs.jsr305
 }
