@@ -1,14 +1,26 @@
 package houtbecke.rs.antbytes;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 public interface AntBytes {
-    <T>byte[] toAntBytes(T o);
-    <T>byte[] toAntBytes(T o,int size);
 
-    <T>T instanceFromAntBytes(Class<? extends T> clazz, byte[] antBytes);
-    <T>T fromAntBytes(T object, byte[] antBytes);
+    @Nonnull
+    <T> byte[] toAntBytes(@Nonnull T o);
 
-    void register(Class clazz);
-    Object fromAntBytes(byte[] antBytes);
+    @Nonnull
+    <T> byte[] toAntBytes(@Nonnull T o,
+                          int size);
 
+    <T> T instanceFromAntBytes(@Nonnull Class<? extends T> clazz,
+                               @Nonnull byte[] antBytes);
+
+    <T> T fromAntBytes(@Nonnull T object,
+                       @Nonnull byte[] antBytes);
+
+    void register(@Nonnull Class clazz);
+
+    @Nullable
+    Object fromAntBytes(@Nonnull byte[] antBytes);
 
 }

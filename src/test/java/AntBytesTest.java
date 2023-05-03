@@ -1,364 +1,314 @@
-import houtbecke.rs.antbytes.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Test;
 
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import houtbecke.rs.antbytes.AntBytes;
+import houtbecke.rs.antbytes.AntBytesUtil;
+import houtbecke.rs.antbytes.Dynamic;
+import houtbecke.rs.antbytes.Flag;
+import houtbecke.rs.antbytes.LSBS16BIT;
+import houtbecke.rs.antbytes.LSBS24BIT;
+import houtbecke.rs.antbytes.LSBS32BIT;
+import houtbecke.rs.antbytes.LSBU16BIT;
+import houtbecke.rs.antbytes.LSBU24BIT;
+import houtbecke.rs.antbytes.LSBU32BIT;
+import houtbecke.rs.antbytes.LSBUXBIT;
+import houtbecke.rs.antbytes.Page;
+import houtbecke.rs.antbytes.Required;
+import houtbecke.rs.antbytes.S16BIT;
+import houtbecke.rs.antbytes.S32BIT;
+import houtbecke.rs.antbytes.S8BIT;
+import houtbecke.rs.antbytes.SXBIT;
+import houtbecke.rs.antbytes.U16BIT;
+import houtbecke.rs.antbytes.U24BIT;
+import houtbecke.rs.antbytes.U32BIT;
+import houtbecke.rs.antbytes.U8BIT;
+import houtbecke.rs.antbytes.UXBIT;
 
-import static org.junit.Assert.*;
-
-public class AntBytesTest  {
+public class AntBytesTest {
 
     public static class TestAntMessage {
-        public TestAntMessage() {}
-
+        @U32BIT(4)
+        public long four;
+        @U16BIT(2)
+        protected int two;
+        @U8BIT(1)
+        int one;
         @Page(123)
         private int page;
 
-        @U8BIT(1)
-        int one;
-
-        @U16BIT(2)
-        protected int two;
-
-        @U32BIT(4)
-        public long four;
+        public TestAntMessage() { }
 
     }
 
     public static class TestAntBitMessage {
-        public TestAntBitMessage() {}
-
+        @U16BIT(value = 2, startBit = 4)
+        protected int two;
+        @U8BIT(value = 1, startBit = 3)
+        int one;
+        @UXBIT(value = 2, startBit = 3)
+        long bit;
+        @UXBIT(value = 4, startBit = 4, bitLength = 2)
+        int bits;
         @Page(123)
         private int page;
 
-        @U8BIT(value = 1, startBit = 3)
-        int one;
-
-        @UXBIT(value = 2, startBit = 3)
-        long bit;
-
-        @U16BIT(value = 2, startBit = 4)
-        protected int two;
-
-        @UXBIT(value = 4, startBit = 4, bitLength = 2)
-        int bits;
+        public TestAntBitMessage() { }
     }
 
-
-    public static class TestRequiredOne{
-        public TestRequiredOne() {}
-
-        @Page(4)
-        private int page;
-
+    public static class TestRequiredOne {
+        @U32BIT(4)
+        public long four;
+        @U16BIT(2)
+        protected int two;
         @Required(1)
         @U8BIT(1)
         int one;
+        @Page(4)
+        private int page;
 
-        @U16BIT(2)
-        protected int two;
-
-        @U32BIT(4)
-        public long four;
+        public TestRequiredOne() { }
 
     }
 
     public static class TestRequiredTwo {
-        public TestRequiredTwo() {}
-
-        @Page(4)
-        private int page;
-
+        @U32BIT(4)
+        public long four;
+        @U16BIT(2)
+        protected int two;
         @U8BIT(1)
         @Required(2)
         int one;
+        @Page(4)
+        private int page;
 
-        @U16BIT(2)
-        protected int two;
-
-        @U32BIT(4)
-        public long four;
+        public TestRequiredTwo() { }
 
     }
 
     public static class TestRequiredThree {
-        public TestRequiredThree() {}
-        @Page(4)
-        private int page;
-
-        @Required(3)
-        @UXBIT(value = 1, startBit = 0, bitLength = 4)
-        int bits;
-
-
-        @Required(2)
-        @U16BIT(2)
-        protected int two;
-
         @Required(4)
         @U32BIT(4)
         public long four;
+        @Required(2)
+        @U16BIT(2)
+        protected int two;
+        @Required(3)
+        @UXBIT(value = 1, startBit = 0, bitLength = 4)
+        int bits;
+        @Page(4)
+        private int page;
+
+        public TestRequiredThree() { }
 
     }
 
     public static class TestSignedAntMessage {
-        public TestSignedAntMessage() {}
-
-        @Page(123)
-        private int page=123;
-
-        @S8BIT(1)
-        int one;
-
-        @S16BIT(2)
-        protected int two;
-
         @S32BIT(4)
         public long four;
-    }
-
-    public static class TestSignedAntMessage2{
-        public TestSignedAntMessage2() {}
-
-        @Page(123)
-        private int page=123;
-
-        @SXBIT(value = 1, startBit = 4, bitLength = 4)
-        int one;
-
-        @SXBIT(value = 2, startBit = 0, bitLength = 16)
+        @S16BIT(2)
         protected int two;
-
-        @SXBIT(value = 4, startBit = 0, bitLength = 32)
-        public long four;
-    }
-
-
-
-    public static class TestLSBMessage {
-        public TestLSBMessage() {}
-
+        @S8BIT(1)
+        int one;
         @Page(123)
         private int page = 123;
 
-        @LSBUXBIT(value = 1, startBit = 0, bitLength = 1)
-        protected int one;
+        public TestSignedAntMessage() { }
+    }
 
-        @LSBU16BIT(2)
+    public static class TestSignedAntMessage2 {
+        @SXBIT(value = 4, startBit = 0, bitLength = 32)
+        public long four;
+        @SXBIT(value = 2, startBit = 0, bitLength = 16)
         protected int two;
+        @SXBIT(value = 1, startBit = 4, bitLength = 4)
+        int one;
+        @Page(123)
+        private int page = 123;
 
+        public TestSignedAntMessage2() { }
+    }
+
+    public static class TestLSBMessage {
         @LSBU32BIT(4)
         public long four;
+        @LSBUXBIT(value = 1, startBit = 0, bitLength = 1)
+        protected int one;
+        @LSBU16BIT(2)
+        protected int two;
+        @Page(123)
+        private int page = 123;
+
+        public TestLSBMessage() { }
 
     }
 
     public static class TestLSBMessage2 {
-        public TestLSBMessage2() {}
-
+        @LSBUXBIT(value = 1, startBit = 4, bitLength = 12)
+        protected int one;
         @Page(123)
         private int page = 123;
 
-        @LSBUXBIT(value = 1, startBit = 4, bitLength = 12)
-        protected int one;
+        public TestLSBMessage2() { }
         ;
 
     }
 
-
-    public static class TestFlagMessage{
-        public TestFlagMessage() {}
-
+    public static class TestFlagMessage {
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
         @Flag(2)
         private boolean flag2;
         @Flag(7)
         private boolean flag7;
         @Flag(8)
         private boolean flag8;
-
-        @Flag(value = 0,startByte = 2)
+        @Flag(value = 0, startByte = 2)
         private boolean flag16;
+
+        public TestFlagMessage() { }
 
     }
 
-    public static class TestFlagDynamicMessage{
-        public TestFlagDynamicMessage() {}
-
+    public static class TestFlagDynamicMessage {
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
         @Flag(2)
         private boolean flag2;
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @U8BIT(1)
         private int byte0;
-
-        @Dynamic(value = 2,order = 2)
+        @Dynamic(value = 2, order = 2)
         @U32BIT(1)
         private int byte2;
-
-        @Dynamic(value = 1,order = 1)
+        @Dynamic(value = 1, order = 1)
         @U16BIT(1)
         private int abyte1;
 
+        public TestFlagDynamicMessage() { }
 
     }
 
-
-    public static class TestFlagDynamicMessage2{
-        public TestFlagDynamicMessage2() {}
-
+    public static class TestFlagDynamicMessage2 {
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
         @Flag(2)
         private boolean flag2;
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @S8BIT(1)
         private int byte0;
-
-        @Dynamic(value = 1,order = 1,inverse = true)
+        @Dynamic(value = 1, order = 1, inverse = true)
         @S16BIT(1)
         private int byte1;
-
-        @Dynamic(value = 2,order = 2)
+        @Dynamic(value = 2, order = 2)
         @S32BIT(1)
         private int byte2;
+
+        public TestFlagDynamicMessage2() { }
     }
 
-    public static class TestFlagDynamicMessage3{
-        public TestFlagDynamicMessage3() {}
-
+    public static class TestFlagDynamicMessage3 {
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
         @Flag(2)
         private boolean flag2;
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @S8BIT(1)
         private int byte0;
-
-        @Dynamic(value = 1,order = 1)
+        @Dynamic(value = 1, order = 1)
         @LSBU16BIT(1)
         private int byte1;
-
-        @Dynamic(value = 2,order = 2)
+        @Dynamic(value = 2, order = 2)
         @LSBU32BIT(1)
         private int byte2;
+
+        public TestFlagDynamicMessage3() { }
     }
 
     public static class TestFlagDynamicMessage24 {
-        public TestFlagDynamicMessage24() {}
-
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @U24BIT(1)
         private int byte0;
-
-        @Dynamic(value = 1,order = 1)
+        @Dynamic(value = 1, order = 1)
         @LSBU24BIT(1)
         private int byte1;
 
+        public TestFlagDynamicMessage24() { }
 
     }
 
-
     public static class TestFlagDynamicMessageSigned {
-        public TestFlagDynamicMessageSigned() {}
-
         @Flag(0)
         private boolean flag0;
-
         @Flag(1)
         private boolean flag1;
-
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @LSBS16BIT(1)
         private int byte0;
-
-        @Dynamic(value = 1,order = 1)
+        @Dynamic(value = 1, order = 1)
         @LSBS24BIT(1)
         private int byte1;
+
+        public TestFlagDynamicMessageSigned() { }
     }
 
     public static class TestFlagDynamicMessageSigned2 {
-        public TestFlagDynamicMessageSigned2() {}
-
         @Flag(0)
         private boolean flag0;
-
-        @Dynamic(value = 0,order = 0)
+        @Dynamic(value = 0, order = 0)
         @LSBS32BIT(1)
         private int byte0;
 
+        public TestFlagDynamicMessageSigned2() { }
+
     }
 
-
-
     public static class TestLSBSMessage {
-        public TestLSBSMessage() {}
-
+        @LSBS32BIT(3)
+        public long three;
+        @LSBS16BIT(1)
+        protected int one;
+        @LSBS24BIT(7)
+        protected int seven;
         @Page(123)
         private int page = 123;
 
-        @LSBS16BIT(1)
-        protected int one;
-
-        @LSBS32BIT(3)
-        public long three;
-
-        @LSBS24BIT(7)
-        protected int seven;
+        public TestLSBSMessage() { }
     }
-
-
-
-    AntBytes impl = AntBytesUtil.getInstance();
-
     final static byte[] lowBytes = {123, 1, 0, 2, 0, 0, 0, 4};
+    final static byte[] lowBytesIncomplete = {123, 1, 0, 2, 0};
     final static byte[] highBytes = {123, -1, -1, -1, -1, -1, -1, -1};
     final static byte[] lowBytesSigned = {123, -1, -1, -2, -1, -1, -1, -4};
-    final static byte[] lowBytesSigned2 = {123, (byte)0xF, -1, -2, -1, -1, -1, -4};
-    final static byte[] lowLSBBytes = {123, 1, 2, 0, 4, 0, 0,0};
-    final static byte[] lowLSBBytes2 = {123, (byte)0b11110000,(byte)0b11111111,0, 0, 0, 0, 0};
-    final static byte[] flagBytes = {(byte)0b10000011, (byte)0b00000001,(byte)0b00000001,0, 0, 0, 0, 0};
-    final static byte[] dynamicBytes1 = {(byte)0b00000111, 1,0, 2, 0, 0, 0,3};
-    final static byte[] dynamicBytes2 = {(byte)0b00000100, 0,0, 0, 3, 0, 0,0};
-    final static byte[] dynamicBytes3 = {(byte)0b00000111, 1,2, 0, 3, 0, 0,0};
-    final static byte[] dynamicBytes4 = {(byte)0b00000101, 1,0, 2, 0, 0, 0,3};
-    final static byte[] dynamicBytes24 = {(byte)0b00000011, 0,0, 1, 2, 0, 0,0};
-    final static byte[] dynamicBytes24False = {0, 0,0, 0, 0, 0, 0,0};
-    final static byte[] dynamicSignedBytes = {(byte)0b00000011, 1,0, 2, 0, 0, 0,0};
-    final static byte[] dynamicSignedBytes2 = {(byte)0b0000001, 1,0, 0,0, 0, 0,0};
-
-    final static byte[] lowLSBSBytes = {123, -1, -1, -3, -1, -1, -1,-7,-1,-1};
-
+    final static byte[] lowBytesSigned2 = {123, (byte) 0xF, -1, -2, -1, -1, -1, -4};
+    final static byte[] lowLSBBytes = {123, 1, 2, 0, 4, 0, 0, 0};
+    final static byte[] lowLSBBytes2 = {123, (byte) 0b11110000, (byte) 0b11111111, 0, 0, 0, 0, 0};
+    final static byte[] flagBytes = {(byte) 0b10000011, (byte) 0b00000001, (byte) 0b00000001, 0, 0, 0, 0, 0};
+    final static byte[] dynamicBytes1 = {(byte) 0b00000111, 1, 0, 2, 0, 0, 0, 3};
+    final static byte[] dynamicBytes2 = {(byte) 0b00000100, 0, 0, 0, 3, 0, 0, 0};
+    final static byte[] dynamicBytes3 = {(byte) 0b00000111, 1, 2, 0, 3, 0, 0, 0};
+    final static byte[] dynamicBytes4 = {(byte) 0b00000101, 1, 0, 2, 0, 0, 0, 3};
+    final static byte[] dynamicBytes24 = {(byte) 0b00000011, 0, 0, 1, 2, 0, 0, 0};
+    final static byte[] dynamicBytes24False = {0, 0, 0, 0, 0, 0, 0, 0};
+    final static byte[] dynamicSignedBytes = {(byte) 0b00000011, 1, 0, 2, 0, 0, 0, 0};
+    final static byte[] dynamicSignedBytes2 = {(byte) 0b0000001, 1, 0, 0, 0, 0, 0, 0};
+    final static byte[] lowLSBSBytes = {123, -1, -1, -3, -1, -1, -1, -7, -1, -1};
+    final static byte[] lowLSBSBytesIncomplete = {123, -1, -1, -3, -1, -1, -1};
     final static byte[] noBytes = {0, 0, 0, 0, 0, 0, 0, 0};
     final static byte[] requiredOneBytes = {4, 1, 0, 2, 0, 0, 0, 4};
     final static byte[] requiredTwoBytes = {4, 2, 0, 2, 0, 0, 0, 4};
@@ -366,7 +316,9 @@ public class AntBytesTest  {
     final static byte[] requiredFourBytes = {4, 48, 0, 0, 0, 0, 0, 4};
     final static byte[] requiredFiveBytes = {4, 48, 0, 2, 0, 0, 0, 0};
     final static byte[] requiredSixBytes = {4, 0, 0, 2, 0, 0, 0, 4};
-
+    // 129 = 10000001
+    final static byte[] bitBytes = {123, 0b000_10000, 0b001_1_1111, (byte) 0b1111_1111, (byte) 0b1111_10_00, 0, 0, 0};
+    AntBytes impl = AntBytesUtil.getInstance();
 
     @Test
     public void toBytesLow() {
@@ -399,6 +351,16 @@ public class AntBytesTest  {
     }
 
     @Test
+    public void fromBytesLowInComplete() {
+        TestAntMessage message = impl.instanceFromAntBytes(TestAntMessage.class, lowBytesIncomplete);
+        assertNotNull(message);
+        assertEquals(1, message.one);
+        assertEquals(2, message.two);
+        assertEquals(0, message.four);
+        assertEquals(123, message.page);
+    }
+
+    @Test
     public void toBytesHigh() {
 
         TestAntMessage highTest = new TestAntMessage();
@@ -417,7 +379,6 @@ public class AntBytesTest  {
         assertEquals(highBytes[6], antBytes[6]);
         assertEquals(highBytes[7], antBytes[7]);
     }
-
 
     @Test
     public void fromBytesHigh() {
@@ -448,7 +409,6 @@ public class AntBytesTest  {
         assertEquals(lowBytesSigned[7], antBytes[7]);
     }
 
-
     @Test
     public void fromBytesLowSigned() {
         TestSignedAntMessage message = impl.instanceFromAntBytes(TestSignedAntMessage.class, lowBytesSigned);
@@ -457,7 +417,6 @@ public class AntBytesTest  {
         assertEquals(-2, message.two);
         assertEquals(-4, message.four);
     }
-
 
     @Test
     public void toBytesLowSigned2() {
@@ -490,28 +449,32 @@ public class AntBytesTest  {
 
     }
 
-
-
     @Test
     public void toBytesSignedLSB() {
         TestLSBSMessage message = new TestLSBSMessage();
         message.one = -1;
         message.three = -3;
         message.seven = -7;
-        byte[] antBytes = impl.toAntBytes(message,10);
+        byte[] antBytes = impl.toAntBytes(message, 10);
 
-
-        assertArrayEquals(lowLSBSBytes,antBytes);
+        assertArrayEquals(lowLSBSBytes, antBytes);
     }
 
     @Test
     public void fromBytesSignedLSB() {
-        TestLSBSMessage message = impl.instanceFromAntBytes(TestLSBSMessage.class,lowLSBSBytes);
-        assertEquals(-1,message.one );
-        assertEquals(-3,message.three );
-        assertEquals(-7,message.seven );
+        TestLSBSMessage message = impl.instanceFromAntBytes(TestLSBSMessage.class, lowLSBSBytes);
+        assertEquals(-1, message.one);
+        assertEquals(-3, message.three);
+        assertEquals(-7, message.seven);
     }
 
+    @Test
+    public void fromBytesSignedLSBIncomplete() {
+        TestLSBSMessage message = impl.instanceFromAntBytes(TestLSBSMessage.class, lowLSBSBytesIncomplete);
+        assertEquals(-1, message.one);
+        assertEquals(-3, message.three);
+        assertEquals(0, message.seven);
+    }
 
     @Test
     public void toBytesSignedHigh() {
@@ -542,10 +505,6 @@ public class AntBytesTest  {
         assertEquals(-1, message.four);
     }
 
-
-
-
-
     @Test
     public void fromBytesSigned() {
         TestSignedAntMessage message = impl.instanceFromAntBytes(TestSignedAntMessage.class, lowBytes);
@@ -555,9 +514,6 @@ public class AntBytesTest  {
         assertEquals(4, message.four);
         assertEquals(123, message.page);
 
-
-
-
         TestLSBMessage message2 = impl.instanceFromAntBytes(TestLSBMessage.class, lowLSBBytes);
         assertNotNull(message2);
         assertEquals(1, message2.one);
@@ -565,16 +521,11 @@ public class AntBytesTest  {
         assertEquals(4, message2.four);
         assertEquals(123, message2.page);
 
-
         TestLSBMessage2 message3 = impl.instanceFromAntBytes(TestLSBMessage2.class, lowLSBBytes2);
         assertNotNull(message3);
         assertEquals(4095, message3.one);
 
-
     }
-
-    // 129 = 10000001
-    final static byte[] bitBytes = {123, 0b000_10000, 0b001_1_1111, (byte)0b1111_1111, (byte)0b1111_10_00, 0, 0, 0};
 
     @Test
     public void fromBitBytes() {
@@ -587,14 +538,14 @@ public class AntBytesTest  {
 
     }
 
-    @Test public void toBitBytes() {
+    @Test
+    public void toBitBytes() {
         TestAntBitMessage bitMessage = new TestAntBitMessage();
         bitMessage.one = 129;
         bitMessage.bit = 1;
         bitMessage.two = 65535;
         bitMessage.bits = 0b10;
         byte[] antBytes = impl.toAntBytes(bitMessage);
-
 
         assertEquals(bitBytes[0], antBytes[0]);
         assertEquals(bitBytes[1], antBytes[1]);
@@ -613,7 +564,7 @@ public class AntBytesTest  {
 
         impl.register(Object.class); // no side effects
 
-        Object message =  impl.fromAntBytes(lowBytes);
+        Object message = impl.fromAntBytes(lowBytes);
         assertNotNull(message);
         assertTrue(message instanceof TestAntMessage);
 
@@ -622,53 +573,47 @@ public class AntBytesTest  {
 
     }
 
-
     @Test
     public void registrationRequired() {
         impl.register(TestRequiredOne.class);
         impl.register(TestRequiredTwo.class);
         impl.register(TestRequiredThree.class);
 
-
-        Object message =  impl.fromAntBytes(requiredOneBytes);
+        Object message = impl.fromAntBytes(requiredOneBytes);
         assertNotNull(message);
         assertTrue(message instanceof TestRequiredOne);
 
-        Object message2 =  impl.fromAntBytes(requiredTwoBytes);
+        Object message2 = impl.fromAntBytes(requiredTwoBytes);
         assertNotNull(message2);
         assertTrue(message2 instanceof TestRequiredTwo);
 
-        Object message3 =  impl.fromAntBytes(requiredThreeBytes);
+        Object message3 = impl.fromAntBytes(requiredThreeBytes);
         assertNotNull(message3);
         assertTrue(message3 instanceof TestRequiredThree);
 
-        Object message4 =  impl.fromAntBytes(requiredFourBytes);
+        Object message4 = impl.fromAntBytes(requiredFourBytes);
         assertNull(message4);
 
-        Object message5 =  impl.fromAntBytes(requiredFiveBytes);
+        Object message5 = impl.fromAntBytes(requiredFiveBytes);
         assertNull(message5);
 
-        Object message6 =  impl.fromAntBytes(requiredSixBytes);
+        Object message6 = impl.fromAntBytes(requiredSixBytes);
         assertNull(message6);
     }
-
 
     @Test
     public void testRequired() {
         TestRequiredOne object1 = new TestRequiredOne();
         byte[] antBytes = impl.toAntBytes(object1);
 
-
-        TestRequiredOne object2 =  impl.instanceFromAntBytes(TestRequiredOne.class, antBytes);
+        TestRequiredOne object2 = impl.instanceFromAntBytes(TestRequiredOne.class, antBytes);
         assertEquals(4, object2.page);
         assertEquals(1, object2.one);
 
-
-        TestRequiredTwo object3= new TestRequiredTwo();
+        TestRequiredTwo object3 = new TestRequiredTwo();
         antBytes = impl.toAntBytes(object3);
 
-
-        TestRequiredTwo object4 =  impl.instanceFromAntBytes(TestRequiredTwo.class, antBytes);
+        TestRequiredTwo object4 = impl.instanceFromAntBytes(TestRequiredTwo.class, antBytes);
         assertEquals(4, object4.page);
         assertEquals(2, object4.one);
     }
@@ -715,15 +660,14 @@ public class AntBytesTest  {
     @Test
     public void fromFlagBytes() {
 
-
         TestFlagMessage message = impl.instanceFromAntBytes(TestFlagMessage.class, flagBytes);
 
         assertEquals(true, message.flag0);
-        assertEquals(true ,message.flag1);
+        assertEquals(true, message.flag1);
         assertEquals(false, message.flag2);
-        assertEquals(true,message.flag7);
-        assertEquals(true,message.flag8);
-        assertEquals(true,message.flag16);
+        assertEquals(true, message.flag7);
+        assertEquals(true, message.flag8);
+        assertEquals(true, message.flag16);
     }
 
     @Test
@@ -746,74 +690,63 @@ public class AntBytesTest  {
     @Test
     public void fromDynamicBytes() {
 
-
         TestFlagDynamicMessage message = impl.instanceFromAntBytes(TestFlagDynamicMessage.class, dynamicBytes1);
 
         assertEquals(true, message.flag0);
-        assertEquals(true ,message.flag1);
+        assertEquals(true, message.flag1);
         assertEquals(true, message.flag2);
-        assertEquals(1,message.byte0);
-        assertEquals(2,message.abyte1);
-        assertEquals(3,message.byte2);
+        assertEquals(1, message.byte0);
+        assertEquals(2, message.abyte1);
+        assertEquals(3, message.byte2);
 
         TestFlagDynamicMessage message2 = impl.instanceFromAntBytes(TestFlagDynamicMessage.class, dynamicBytes2);
 
         assertEquals(false, message2.flag0);
-        assertEquals(false ,message2.flag1);
+        assertEquals(false, message2.flag1);
         assertEquals(true, message2.flag2);
-        assertEquals(0,message2.byte0);
-        assertEquals(0,message2.abyte1);
-        assertEquals(3,message2.byte2);
-
-
+        assertEquals(0, message2.byte0);
+        assertEquals(0, message2.abyte1);
+        assertEquals(3, message2.byte2);
 
         TestFlagDynamicMessage2 message3 = impl.instanceFromAntBytes(TestFlagDynamicMessage2.class, dynamicBytes4);
 
         assertEquals(true, message3.flag0);
-        assertEquals(false ,message3.flag1);
+        assertEquals(false, message3.flag1);
         assertEquals(true, message3.flag2);
-        assertEquals(1,message3.byte0);
-        assertEquals(2,message3.byte1);
-        assertEquals(3,message3.byte2);
-
+        assertEquals(1, message3.byte0);
+        assertEquals(2, message3.byte1);
+        assertEquals(3, message3.byte2);
 
         TestFlagDynamicMessage3 message4 = impl.instanceFromAntBytes(TestFlagDynamicMessage3.class, dynamicBytes3);
 
         assertEquals(true, message4.flag0);
-        assertEquals(true ,message4.flag1);
+        assertEquals(true, message4.flag1);
         assertEquals(true, message4.flag2);
-        assertEquals(1,message4.byte0);
-        assertEquals(2,message4.byte1);
-        assertEquals(3,message4.byte2);
-
+        assertEquals(1, message4.byte0);
+        assertEquals(2, message4.byte1);
+        assertEquals(3, message4.byte2);
 
         TestFlagDynamicMessage24 message5 = impl.instanceFromAntBytes(TestFlagDynamicMessage24.class, dynamicBytes24);
         assertEquals(true, message5.flag0);
-        assertEquals(true ,message5.flag1);
-        assertEquals(1,message5.byte0);
-        assertEquals(2,message5.byte1);
-
+        assertEquals(true, message5.flag1);
+        assertEquals(1, message5.byte0);
+        assertEquals(2, message5.byte1);
 
         TestFlagDynamicMessage24 message6 = impl.instanceFromAntBytes(TestFlagDynamicMessage24.class, dynamicBytes24False);
         assertEquals(false, message6.flag0);
-        assertEquals(false ,message6.flag1);
-        assertEquals(0,message6.byte0);
-        assertEquals(0,message6.byte1);
-
+        assertEquals(false, message6.flag1);
+        assertEquals(0, message6.byte0);
+        assertEquals(0, message6.byte1);
 
         TestFlagDynamicMessageSigned message7 = impl.instanceFromAntBytes(TestFlagDynamicMessageSigned.class, dynamicSignedBytes);
         assertEquals(true, message7.flag0);
-        assertEquals(true ,message7.flag1);
-        assertEquals(1,message7.byte0);
-        assertEquals(2,message7.byte1);
-
+        assertEquals(true, message7.flag1);
+        assertEquals(1, message7.byte0);
+        assertEquals(2, message7.byte1);
 
         TestFlagDynamicMessageSigned2 message8 = impl.instanceFromAntBytes(TestFlagDynamicMessageSigned2.class, dynamicSignedBytes2);
         assertEquals(true, message8.flag0);
-        assertEquals(1,message8.byte0);
-
-
-
+        assertEquals(1, message8.byte0);
 
     }
 
@@ -846,7 +779,6 @@ public class AntBytesTest  {
 
         assertArrayEquals(dynamicBytes2, antBytes2);
 
-
         TestFlagDynamicMessage3 dynamicMessage3 = new TestFlagDynamicMessage3();
 
         dynamicMessage3.flag0 = true;
@@ -873,7 +805,6 @@ public class AntBytesTest  {
 
         assertArrayEquals(dynamicBytes4, antBytes4);
 
-
         TestFlagDynamicMessage24 dynamicMessage24 = new TestFlagDynamicMessage24();
         dynamicMessage24.flag0 = true;
         dynamicMessage24.flag1 = true;
@@ -882,7 +813,6 @@ public class AntBytesTest  {
 
         byte[] antBytes24 = impl.toAntBytes(dynamicMessage24, 8);
         assertArrayEquals(dynamicBytes24, antBytes24);
-
 
         TestFlagDynamicMessage24 dynamicMessage24False = new TestFlagDynamicMessage24();
         dynamicMessage24False.flag0 = false;
@@ -893,14 +823,13 @@ public class AntBytesTest  {
         byte[] antBytes24false = impl.toAntBytes(dynamicMessage24False, 8);
         assertArrayEquals(dynamicBytes24False, antBytes24false);
 
-        TestFlagDynamicMessageSigned dynamicMessageSigned= new TestFlagDynamicMessageSigned();
+        TestFlagDynamicMessageSigned dynamicMessageSigned = new TestFlagDynamicMessageSigned();
         dynamicMessageSigned.flag0 = true;
         dynamicMessageSigned.flag1 = true;
         dynamicMessageSigned.byte0 = 1;
         dynamicMessageSigned.byte1 = 2;
         byte[] antBytesSigned = impl.toAntBytes(dynamicMessageSigned, 8);
         assertArrayEquals(dynamicSignedBytes, antBytesSigned);
-
 
         TestFlagDynamicMessageSigned2 dynamicMessageSigned2 = new TestFlagDynamicMessageSigned2();
         dynamicMessageSigned2.flag0 = true;

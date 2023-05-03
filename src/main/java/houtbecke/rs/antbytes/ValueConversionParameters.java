@@ -2,6 +2,8 @@ package houtbecke.rs.antbytes;
 
 import java.lang.annotation.Annotation;
 
+import javax.annotation.Nonnull;
+
 public class ValueConversionParameters {
 
     public final int bytePos;
@@ -10,7 +12,7 @@ public class ValueConversionParameters {
     public final boolean signed;
     public final boolean isLSB;
 
-    public ValueConversionParameters(Annotation annotation, int byteShift) {
+    public ValueConversionParameters(@Nonnull Annotation annotation, int byteShift) {
 
         Class type = annotation.annotationType();
 
@@ -117,6 +119,5 @@ public class ValueConversionParameters {
     public boolean isValid() {
         return this.byteLength > 0;
     }
-
 
 }

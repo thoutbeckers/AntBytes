@@ -5,4 +5,7 @@ targetCompatibility = 1.8
 
 dependencies {
     testImplementation libs.junit4
+
+    compileOnly libs.jsr305
+    testCompileOnly libs.jsr305
 }
